@@ -13,8 +13,6 @@ protocol BiometricAuthenticating {
     var biometryName: String { get }
     func authenticate(reason: String) async -> BiometricResult
 }
-
-/// Face ID / Touch ID with device-passcode fallback (`.deviceOwnerAuthentication`).
 struct LocalAuthenticator: BiometricAuthenticating {
     var biometryName: String {
         let context = LAContext()
@@ -47,8 +45,6 @@ struct LocalAuthenticator: BiometricAuthenticating {
         }
     }
 }
-
-/// Decides when the app is locked behind Face ID. Locks when the app goes to the background.
 @MainActor
 @Observable
 final class AppLockController {
@@ -69,8 +65,6 @@ final class AppLockController {
     }
 
     var biometryName: String { authenticator.biometryName }
-
-    /// Call at launch and whenever the user signs in.
     func lockIfNeeded() {
         if isEnabled() && isSignedIn() { isLocked = true }
     }
@@ -92,7 +86,5 @@ final class AppLockController {
     }
 
     func dismissWelcome() { showWelcomeBack = false }
-
-    /// Called when the user signs out or turns the lock off.
     func reset() { isLocked = false; showWelcomeBack = false; lastMessage = nil }
 }

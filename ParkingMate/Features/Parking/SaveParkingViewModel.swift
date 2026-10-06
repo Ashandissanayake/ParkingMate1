@@ -13,8 +13,6 @@ enum SaveParkingError: LocalizedError, Equatable {
         }
     }
 }
-
-/// Form state + validation for "Save My Parking" (MVVM: the view only binds, this builds the domain value).
 @MainActor
 @Observable
 final class SaveParkingViewModel {
@@ -43,8 +41,6 @@ final class SaveParkingViewModel {
     func applyScannedNumber(_ number: String) { space = number }
 
     func setPhoto(_ image: UIImage) { photoData = ImageCompressor.jpeg(from: image) }
-
-    /// Reverse-geocodes the GPS fix into a readable place name (e.g. "Colombo City Mall").
     func resolvePlace(for location: CLLocation) async {
         guard address.isEmpty else { return }
         let placemarks = try? await CLGeocoder().reverseGeocodeLocation(location)
@@ -68,7 +64,6 @@ final class SaveParkingViewModel {
 }
 
 enum ImageCompressor {
-    /// Downscales to max 1280 px and encodes JPEG – keeps Core Data / iCloud records small.
     static func jpeg(from image: UIImage, maxSide: CGFloat = 1280, quality: CGFloat = 0.6) -> Data? {
         let scale = min(1, maxSide / max(image.size.width, image.size.height))
         let size = CGSize(width: image.size.width * scale, height: image.size.height * scale)

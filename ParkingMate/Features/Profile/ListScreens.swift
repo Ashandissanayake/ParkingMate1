@@ -1,8 +1,6 @@
 import SwiftUI
 import MapKit
 
-// MARK: - Favourites (design: favorite_locations)
-
 struct FavoriteLocationsView: View {
     @Environment(AppContainer.self) private var container
     @State private var showAdd = false
@@ -54,8 +52,6 @@ struct FavoriteLocationsView: View {
         Haptics.success()
     }
 }
-
-// MARK: - Vehicles (design: my_vehicles)
 
 struct VehiclesView: View {
     @Environment(AppContainer.self) private var container
@@ -122,8 +118,6 @@ struct AddVehicleSheet: View {
         }
     }
 }
-
-// MARK: - Share location (design: location_sharing)
 
 struct ShareLocationView: View {
     @Environment(AppContainer.self) private var container
@@ -200,8 +194,6 @@ struct ShareLocationView: View {
     }
 }
 
-// MARK: - Smart parking detection (designs: smart_parking_detection_*, parking_zone_detection)
-
 struct SmartDetectionView: View {
     @Environment(AppContainer.self) private var container
     @EnvironmentObject private var settings: AppSettings
@@ -236,8 +228,6 @@ struct SmartDetectionView: View {
                     .padding(.horizontal, 14).padding(.vertical, 8)
                     .background(Theme.primarySoft, in: Capsule())
                     .accessibilityAddTraits(.updatesFrequently)
-
-                // 1. CoreMotion Walk Detection
                 VStack(alignment: .leading, spacing: 10) {
                     Toggle(isOn: Binding(get: { settings.autoDetectParking }, set: { settings.autoDetectParking = $0; container.applyAutoDetectSetting() })) {
                         Label("Detect when I park", systemImage: "figure.walk.motion")
@@ -249,8 +239,6 @@ struct SmartDetectionView: View {
                         .font(.footnote).foregroundStyle(Theme.textSecondary)
                 }
                 .cardStyle()
-
-                // 2. Feature B: Bluetooth & CarPlay Disconnect Auto-Save
                 VStack(alignment: .leading, spacing: 10) {
                     Toggle(isOn: Binding(get: { settings.bluetoothAutoSaveEnabled }, set: { settings.bluetoothAutoSaveEnabled = $0; container.applyBluetoothSetting() })) {
                         Label("Bluetooth & CarPlay Auto-Save", systemImage: "car.side.fill")
@@ -279,8 +267,6 @@ struct SmartDetectionView: View {
                     }
                 }
                 .cardStyle()
-
-                // 3. Feature E: Siri Voice Audio Announcements
                 VStack(alignment: .leading, spacing: 10) {
                     Toggle(isOn: $settings.voiceAnnouncementsEnabled) {
                         Label("Siri Voice Announcements", systemImage: "speaker.wave.3.fill")
@@ -305,8 +291,6 @@ struct SmartDetectionView: View {
                     }
                 }
                 .cardStyle()
-
-                // 4. Feature F: Geofence Auto-Checkout
                 VStack(alignment: .leading, spacing: 10) {
                     Toggle(isOn: $settings.autoCheckoutEnabled) {
                         Label("Geofence Smart Auto-Checkout", systemImage: "flag.checkered.circle.fill")
@@ -315,8 +299,6 @@ struct SmartDetectionView: View {
                         .font(.footnote).foregroundStyle(Theme.textSecondary)
                 }
                 .cardStyle()
-
-                // 5. Detected location & altitude details
                 VStack(alignment: .leading, spacing: 12) {
                     SectionTitle("Detected location details")
                     InfoRow(systemImage: "square.stack.3d.up", title: "Floor (barometer)",

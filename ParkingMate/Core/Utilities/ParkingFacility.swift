@@ -1,14 +1,11 @@
 import Foundation
 import CoreLocation
-
-/// A public parking facility returned by the external OpenStreetMap / Overpass REST API.
 struct ParkingFacility: Identifiable, Equatable, Hashable, Codable, Sendable {
     let id: String
     var name: String
     var latitude: Double
     var longitude: Double
     var operatorName: String?
-    /// true = free, false = paid, nil = unknown
     var isFree: Bool?
     var charge: String?
     var capacity: Int?
@@ -32,8 +29,6 @@ struct ParkingFacility: Identifiable, Equatable, Hashable, Codable, Sendable {
         }
     }
 }
-
-/// Filters shown as chips on the nearby-parking screen ("All", "Free", "Covered", "EV Charging").
 enum FacilityFilter: String, CaseIterable, Identifiable {
     case all = "All", free = "Free", covered = "Covered", ev = "EV Charging"
     var id: String { rawValue }

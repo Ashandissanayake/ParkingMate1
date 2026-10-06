@@ -1,6 +1,4 @@
 import SwiftUI
-
-/// What the Save Parking screen should do as soon as it opens (from the Home quick actions).
 enum SaveStartAction: Hashable { case scan, voice, photo }
 
 struct ParkingPrefill: Hashable {
@@ -8,8 +6,6 @@ struct ParkingPrefill: Hashable {
     var floorHint: String?
     var startAction: SaveStartAction?
 }
-
-/// Every pushed screen in the app. Used with `NavigationStack` + `navigationDestination(for:)`.
 enum AppRoute: Hashable {
     case saveParking(ParkingPrefill)
     case findMyCar, navigateToCar, timer, extend, reminders
@@ -17,8 +13,6 @@ enum AppRoute: Hashable {
     case nearby(GeoPoint?), facility(ParkingFacility)
     case favorites, vehicles, shareLocation, smartDetection
     case profileEdit, accessibility, iCloud, security, help, about
-
-    /// Used by notification taps and App Intents.
     init?(deepLinkKey: String) {
         switch deepLinkKey {
         case "findMyCar": self = .findMyCar
@@ -58,13 +52,10 @@ struct RouteDestination: View {
 }
 
 extension View {
-    /// Attach once per `NavigationStack` root.
     func appRoutes() -> some View {
         navigationDestination(for: AppRoute.self) { RouteDestination(route: $0) }
     }
 }
-
-/// Lets deep screens (e.g. "Session Extended") jump back to the dashboard.
 struct PopToRootAction {
     var action: () -> Void = {}
     func callAsFunction() { action() }

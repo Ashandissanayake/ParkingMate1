@@ -1,7 +1,5 @@
 import SwiftUI
 
-// MARK: - Button styles (DESIGN.md "Buttons": solid #0066FF, 0.5rem radius, medium label)
-
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
     func makeBody(configuration: Configuration) -> some View {
@@ -43,8 +41,6 @@ struct DestructiveButtonStyle: ButtonStyle {
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
-
-/// Text-style button that grows an underline when "Button Shapes" is on (in iOS or in app settings).
 struct LinkButtonStyle: ButtonStyle {
     @Environment(\.accessibilityShowButtonShapes) private var systemShapes
     @Environment(\.appButtonShapes) private var appShapes
@@ -64,8 +60,6 @@ extension ButtonStyle where Self == SecondaryButtonStyle { static var secondary:
 extension ButtonStyle where Self == DestructiveButtonStyle { static var destructive: DestructiveButtonStyle { .init() } }
 extension ButtonStyle where Self == LinkButtonStyle { static var link: LinkButtonStyle { .init() } }
 
-// MARK: - Cards (DESIGN.md "Cards": elevated white, soft blue-tinted shadow)
-
 struct CardModifier: ViewModifier {
     @Environment(\.appHighContrast) private var highContrast
     var padding: CGFloat = 16
@@ -81,8 +75,6 @@ struct CardModifier: ViewModifier {
 
 extension View {
     func cardStyle(padding: CGFloat = 16) -> some View { modifier(CardModifier(padding: padding)) }
-
-    /// Animation that is skipped when reduced motion is requested.
     func motionSafe<V: Equatable>(_ animation: Animation? = .easeInOut(duration: 0.25), value: V) -> some View {
         modifier(MotionSafeModifier(animation: animation, value: value))
     }
@@ -96,8 +88,6 @@ private struct MotionSafeModifier<V: Equatable>: ViewModifier {
         content.animation(reduced ? nil : animation, value: value)
     }
 }
-
-// MARK: - Input field
 
 struct IconField: View {
     let title: String
@@ -143,8 +133,6 @@ struct IconField: View {
             .stroke(highContrast ? Theme.textPrimary : Theme.outline, lineWidth: highContrast ? 1.5 : 1))
     }
 }
-
-// MARK: - Small building blocks
 
 struct Chip: View {
     let title: String
@@ -206,8 +194,6 @@ struct SectionTitle: View {
             .accessibilityAddTraits(.isHeader)
     }
 }
-
-/// Circular progress used by the parking timer & "session extended" screens.
 struct ProgressRing: View {
     let progress: Double
     let title: String
@@ -293,8 +279,6 @@ struct ToggleRow: View {
         .frame(minHeight: 44)
     }
 }
-
-/// The "P in a map pin" brand mark used on splash / auth screens.
 struct LogoMark: View {
     var size: CGFloat = 72
     var onDark = false

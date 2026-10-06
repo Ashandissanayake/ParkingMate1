@@ -1,15 +1,7 @@
-/// ParkingMate Test Suite — 11 Test Suites, 59 Passing Automated Unit Tests
-/// Built with Apple Swift Testing framework for NIBM BSc Computing Coursework (Student Index: 25.1/023)
 import Testing
 import Foundation
 import CoreLocation
 @testable import parkingMate
-
-// ==============================================================================
-// MARK: - TEST DOUBLES & MOCKS (In-Memory Fakes for Unit Testing)
-// ==============================================================================
-
-/// In-Memory fake secret store to test AuthService without touching macOS/iOS Keychain.
 final class InMemorySecrets: SecretStoring {
     private var storage: [String: Data] = [:]
 
@@ -158,10 +150,6 @@ enum Fixtures {
     }
 }
 
-// ==============================================================================
-// MARK: - SUITE 1: AUTHENTICATION & CREDENTIAL VALIDATION
-// ==============================================================================
-
 @Suite("CredentialValidator")
 struct CredentialValidatorTests {
     @Test(arguments: ["a@b.co", "john.doe+tag@example.com", "ashan@gmail.com"])
@@ -240,10 +228,6 @@ struct AuthServiceTests {
         #expect(second.currentUser?.fullName == "A")
     }
 }
-
-// ==============================================================================
-// MARK: - SUITE 2: PARKING STORE MANAGEMENT
-// ==============================================================================
 
 @MainActor
 @Suite("ParkingStore")
@@ -358,10 +342,6 @@ struct ParkingStoreTests {
     }
 }
 
-// ==============================================================================
-// MARK: - SUITE 3: SAVE PARKING VIEW MODEL
-// ==============================================================================
-
 @MainActor
 @Suite("SaveParkingViewModel")
 struct SaveParkingViewModelTests {
@@ -408,10 +388,6 @@ struct SaveParkingViewModelTests {
     }
 }
 
-// ==============================================================================
-// MARK: - SUITE 4: PARKING COST CALCULATOR (Coursework LO1 & LO2)
-// ==============================================================================
-
 @Suite("ParkingCostCalculator")
 struct ParkingCostCalculatorTests {
     @Test func standardHourlyCost() {
@@ -420,19 +396,16 @@ struct ParkingCostCalculatorTests {
     }
 
     @Test func fifteenMinuteBillingBlocks() {
-        // 2h 15m (8100s) at LKR 200/hr in 15-min increments = LKR 450
         let cost = ParkingCostCalculator.cost(hourlyRate: 200, duration: 8100, graceMinutes: 0, incrementMinutes: 15)
         #expect(cost == 450)
     }
 
     @Test func partialBlockRoundsUp() {
-        // 1h 2m (3720s) rounds up to 1h 15m = LKR 250
         let cost = ParkingCostCalculator.cost(hourlyRate: 200, duration: 3720, graceMinutes: 0, incrementMinutes: 15)
         #expect(cost == 250)
     }
 
     @Test func gracePeriodDeduction() {
-        // 15-minute stay with 15-minute free grace period is LKR 0
         let cost = ParkingCostCalculator.cost(hourlyRate: 200, duration: 900, graceMinutes: 15, incrementMinutes: 15)
         #expect(cost == 0)
     }
@@ -447,10 +420,6 @@ struct ParkingCostCalculatorTests {
         #expect(ParkingCostCalculator.cost(hourlyRate: 200, duration: -100) == 0)
     }
 }
-
-// ==============================================================================
-// MARK: - SUITE 5: PARKING SESSION LOGIC
-// ==============================================================================
 
 @Suite("ParkingSessionLogic")
 struct ParkingSessionLogicTests {
@@ -496,10 +465,6 @@ struct ParkingSessionLogicTests {
     }
 }
 
-// ==============================================================================
-// MARK: - SUITE 6: DISPLAY FORMATTERS
-// ==============================================================================
-
 @Suite("Formatters")
 struct FormattersTests {
     @Test func distanceFormattingMetersAndKilometers() {
@@ -525,10 +490,6 @@ struct FormattersTests {
         #expect(Formatters.currency(250.50) == "LKR 250.50")
     }
 }
-
-// ==============================================================================
-// MARK: - SUITE 7: GEOMETRY & COMPASS
-// ==============================================================================
 
 @Suite("Geo")
 struct GeoTests {
@@ -558,10 +519,6 @@ struct GeoTests {
         #expect(d > 1400 && d < 2000)
     }
 }
-
-// ==============================================================================
-// MARK: - SUITE 8: HISTORY SEARCH & FILTERING
-// ==============================================================================
 
 @Suite("SessionSearch")
 struct SessionSearchTests {
@@ -611,10 +568,6 @@ struct SessionSearchTests {
     }
 }
 
-// ==============================================================================
-// MARK: - SUITE 9: SRI LANKA FACILITIES CATALOG
-// ==============================================================================
-
 @Suite("SriLankaFacilities")
 struct SriLankaFacilitiesTests {
     @Test func catalogHasComprehensiveCoverage() {
@@ -645,10 +598,6 @@ struct SriLankaFacilitiesTests {
         #expect(FacilityFilter.covered.matches(free) == false)
     }
 }
-
-// ==============================================================================
-// MARK: - SUITE 10: SMART BLUETOOTH AUTO-SAVE (Feature B)
-// ==============================================================================
 
 @MainActor
 @Suite("BluetoothAutoSave")

@@ -2,8 +2,6 @@ import Foundation
 import CoreData
 import CloudKit
 import Observation
-
-/// Observes NSPersistentCloudKitContainer events so the iCloud Sync screen can show real status.
 @MainActor
 @Observable
 final class CloudSyncMonitor {

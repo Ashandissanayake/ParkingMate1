@@ -2,8 +2,6 @@ import Foundation
 import CoreLocation
 import MapKit
 import Observation
-
-/// Loads nearby parking from the REST API, applies filters, and handles place search.
 @MainActor
 @Observable
 final class NearbyParkingViewModel {
@@ -41,8 +39,6 @@ final class NearbyParkingViewModel {
             errorMessage = nil
         }
     }
-
-    /// Geocodes the typed place name (MKLocalSearch) and loads parking around it.
     func search() async -> CLLocationCoordinate2D? {
         let text = searchText.trimmingCharacters(in: .whitespaces)
         guard !text.isEmpty else { return nil }

@@ -1,8 +1,5 @@
 import CoreData
 
-// The Core Data model is defined in code (no .xcdatamodeld) so the project builds from plain source files.
-// All attributes are optional or have defaults, which keeps the schema CloudKit-compatible.
-
 @objc(ParkingSessionEntity)
 final class ParkingSessionEntity: NSManagedObject {
     @NSManaged var id: UUID?

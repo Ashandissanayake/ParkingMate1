@@ -4,18 +4,12 @@ import Observation
 import UIKit
 import AVFoundation
 import Combine
-
-/// Central place for constants so nothing is "magic" elsewhere in the app.
 enum AppConfig {
     static let currencyCode = "LKR"
     static let defaultHourlyRate: Double = 200
-    /// Radius (metres) of the geofence drawn around a saved car.
     static let geofenceRadius: CLLocationDistance = 75
-    /// Free public Overpass (OpenStreetMap) endpoint used for nearby parking facilities.
     static let overpassEndpoint = URL(string: "https://overpass-api.de/api/interpreter")!
-    /// Colombo – used as the map fallback before GPS is available.
     static var fallbackCenter: CLLocationCoordinate2D { CLLocationCoordinate2D(latitude: 6.9271, longitude: 79.8612) }
-    /// Must match the iCloud container you create in Signing & Capabilities.
     static var cloudKitContainerIdentifier: String {
         "iCloud." + (Bundle.main.bundleIdentifier ?? "com.nibm.parkingmate")
     }
@@ -23,8 +17,6 @@ enum AppConfig {
     static let sectionOptions = ["Blue", "Red", "Green", "Yellow", "Orange", "Purple"]
     static let userAgent = "ParkingMate-iOS-Coursework/1.0 (NIBM BSCCOMP25.1P)"
 }
-
-// MARK: - Firebase Configuration
 
 struct FirebaseConfig: Sendable {
     let apiKey: String
@@ -56,8 +48,6 @@ struct FirebaseConfig: Sendable {
         )
     }()
 }
-
-// MARK: - Firebase Models
 
 struct FirebaseAuthSession: Codable, Equatable, Sendable {
     let localId: String
@@ -111,8 +101,6 @@ enum FirebaseError: LocalizedError {
     }
 }
 
-// MARK: - Firebase Service
-
 @MainActor
 @Observable
 final class FirebaseService {
@@ -131,8 +119,6 @@ final class FirebaseService {
         self.config = config
         self.session = session
     }
-
-    // MARK: - Firebase Auth API
 
     func signUp(email: String, password: String, displayName: String) async throws -> FirebaseAuthSession {
         let url = URL(string: "https://identitytoolkit.googleapis.com/v1/accounts:signUp?key=\(config.apiKey)")!
@@ -257,8 +243,6 @@ final class FirebaseService {
         activeSession = nil
     }
 
-    // MARK: - Cloud Firestore API (Sessions & Vehicles Sync)
-
     func syncParkingSession(_ session: ParkingSession, userId: String) async throws {
         isSyncing = true
         defer { isSyncing = false }
@@ -311,8 +295,6 @@ final class FirebaseService {
         _ = try? await self.session.data(for: request)
     }
 
-    // MARK: - Share Location via Firebase (Real-time Cloud Link)
-
     func createLocationShare(for session: ParkingSession, sharedBy: String) async throws -> SharedParkingLocation {
         let shareId = String(UUID().uuidString.prefix(8)).lowercased()
         let share = SharedParkingLocation(
@@ -355,29 +337,20 @@ final class FirebaseService {
         return share
     }
 
-    // MARK: - Cloud Messaging (Push Notifications)
-
     func registerFCMToken(_ token: String) {
         self.fcmToken = token
     }
 }
-
-// MARK: - Sample Parking Photos (for Testing & Demonstrations)
 
 enum SampleParkingImages {
     static func generate(title: String, bay: String, floor: String, color: UIColor) -> UIImage {
         let size = CGSize(width: 800, height: 600)
         let renderer = UIGraphicsImageRenderer(size: size)
         return renderer.image { ctx in
-            // Ground concrete
             UIColor(red: 0.18, green: 0.20, blue: 0.22, alpha: 1.0).setFill()
             ctx.fill(CGRect(origin: .zero, size: size))
-
-            // Wall
             UIColor(red: 0.28, green: 0.30, blue: 0.33, alpha: 1.0).setFill()
             ctx.fill(CGRect(x: 0, y: 0, width: 800, height: 260))
-
-            // Pillar
             color.setFill()
             ctx.fill(CGRect(x: 40, y: 0, width: 140, height: 420))
 
@@ -386,8 +359,6 @@ enum SampleParkingImages {
                 .foregroundColor: UIColor.white
             ]
             (floor as NSString).draw(at: CGPoint(x: 70, y: 80), withAttributes: pillarAttrs)
-
-            // Yellow parking lines
             let path = UIBezierPath()
             path.lineWidth = 14
             UIColor(red: 0.95, green: 0.85, blue: 0.15, alpha: 1.0).setStroke()
@@ -398,8 +369,6 @@ enum SampleParkingImages {
             path.move(to: CGPoint(x: 280, y: 260))
             path.addLine(to: CGPoint(x: 580, y: 260))
             path.stroke()
-
-            // Wall Bay Sign
             let signRect = CGRect(x: 280, y: 80, width: 300, height: 110)
             UIBezierPath(roundedRect: signRect, cornerRadius: 16).fill(with: .normal, alpha: 0.95)
 
@@ -410,8 +379,6 @@ enum SampleParkingImages {
             let bayStr = bay as NSString
             let baySize = bayStr.size(withAttributes: bayAttrs)
             bayStr.draw(at: CGPoint(x: signRect.midX - baySize.width/2, y: signRect.midY - baySize.height/2), withAttributes: bayAttrs)
-
-            // Title
             let titleAttrs: [NSAttributedString.Key: Any] = [
                 .font: UIFont.systemFont(ofSize: 20, weight: .semibold),
                 .foregroundColor: UIColor.white.withAlphaComponent(0.85)
@@ -432,8 +399,6 @@ enum SampleParkingImages {
         generate(title: "Galle Face Green • Surface Bay", bay: "G-14", floor: "G", color: UIColor(red: 0.55, green: 0.25, blue: 0.75, alpha: 1.0))
     }
 }
-
-// MARK: - Voice Audio Announcements (Feature E: AVSpeechSynthesizer)
 
 @MainActor
 final class VoiceAnnouncementService: NSObject, AVSpeechSynthesizerDelegate {
@@ -475,10 +440,6 @@ final class VoiceAnnouncementService: NSObject, AVSpeechSynthesizerDelegate {
         speak("Smart checkout complete. You have departed \(title). Total duration \(duration). Final fee \(costFormatted) Rupees.")
     }
 }
-
-// MARK: - Bluetooth & CarPlay Auto-Save Service (Feature B)
-
-/// Background service monitoring Bluetooth (A2DP/HFP) and CarPlay disconnects to auto-detect vehicle parking events.
 @MainActor
 @Observable
 final class BluetoothParkingService: NSObject {

@@ -1,8 +1,5 @@
 import Foundation
 
-// Repository protocols = the seam between the app and Core Data. View models and the store depend on
-// these, so tests can inject in-memory fakes (dependency inversion).
-
 @MainActor
 protocol ParkingRepository: AnyObject {
     func fetchAll() throws -> [ParkingSession]

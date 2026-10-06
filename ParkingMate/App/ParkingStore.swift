@@ -1,9 +1,6 @@
 import Foundation
 import CoreLocation
 import Observation
-
-/// Single source of truth for sessions, vehicles and favourites. Persists through repository protocols and
-/// coordinates the side effects (reminders + geofence) so every screen stays thin.
 @MainActor
 @Observable
 final class ParkingStore {
@@ -33,16 +30,12 @@ final class ParkingStore {
         reload()
     }
 
-    // MARK: Derived
-
     var activeSession: ParkingSession? { sessions.first(where: \.isActive) }
     var history: [ParkingSession] { sessions.filter { !$0.isActive } }
     var defaultVehicle: Vehicle? { vehicles.first(where: \.isDefault) ?? vehicles.first }
 
     func session(id: UUID) -> ParkingSession? { sessions.first { $0.id == id } }
     func vehicle(id: UUID?) -> Vehicle? { id.flatMap { id in vehicles.first { $0.id == id } } }
-
-    // MARK: Loading
 
     func reload() {
         do {
@@ -53,10 +46,6 @@ final class ParkingStore {
             lastError = "Couldn't load your data: \(error.localizedDescription)"
         }
     }
-
-    // MARK: Sessions
-
-    /// Saves a new active session. Any previous active session is ended first (one parked car at a time).
     @discardableResult
     func startSession(_ session: ParkingSession) -> Bool {
         for var other in sessions where other.isActive && other.id != session.id {
@@ -79,8 +68,6 @@ final class ParkingStore {
         reload()
         return session
     }
-
-    /// Adds time to the meter. If the meter already ran out, extension counts from "now".
     @discardableResult
     func extend(sessionID: UUID, byMinutes minutes: Int) -> ParkingSession? {
         guard minutes > 0, var target = self.session(id: sessionID), target.isActive else { return nil }
@@ -107,14 +94,10 @@ final class ParkingStore {
         stopSideEffects(for: session.id)
         reload()
     }
-
-    /// Re-applies reminder settings to the active session (called when the user changes them).
     func refreshReminders() {
         guard let active = activeSession else { return }
         scheduleReminders(for: active)
     }
-
-    // MARK: Vehicles
 
     func addVehicle(_ vehicle: Vehicle) {
         var v = vehicle
@@ -144,8 +127,6 @@ final class ParkingStore {
         if wasDefault, let first = vehicles.first { setDefaultVehicle(id: first.id) }
     }
 
-    // MARK: Favourites
-
     func addFavorite(_ favorite: FavoriteLocation) {
         guard persist({ try favoriteRepo.upsert(favorite) }) else { return }
         reload()
@@ -155,8 +136,6 @@ final class ParkingStore {
         guard persist({ try favoriteRepo.delete(id: id) }) else { return }
         reload()
     }
-
-    // MARK: Side effects
 
     private func startSideEffects(for session: ParkingSession) {
         scheduleReminders(for: session)

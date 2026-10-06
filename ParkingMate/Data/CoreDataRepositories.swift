@@ -1,7 +1,5 @@
 import CoreData
 
-// MARK: - Mapping between managed objects and domain values
-
 private extension ParkingSessionEntity {
     func toDomain() -> ParkingSession? {
         guard let id, let startDate else { return nil }
@@ -43,8 +41,6 @@ private extension FavoriteEntity {
     }
 }
 
-// MARK: - Shared fetch helpers
-
 private func fetchOne<T: NSManagedObject>(_ type: T.Type, entity: String, id: UUID,
                                           in context: NSManagedObjectContext) throws -> T? {
     let request = NSFetchRequest<T>(entityName: entity)
@@ -52,8 +48,6 @@ private func fetchOne<T: NSManagedObject>(_ type: T.Type, entity: String, id: UU
     request.fetchLimit = 1
     return try context.fetch(request).first
 }
-
-// MARK: - Repositories
 
 @MainActor
 final class CoreDataParkingRepository: ParkingRepository {

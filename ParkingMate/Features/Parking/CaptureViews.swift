@@ -3,8 +3,6 @@ import AVFoundation
 import VisionKit
 import PhotosUI
 
-// MARK: - Camera (design: parking_spot_photo)
-
 struct CameraPicker: UIViewControllerRepresentable {
     var onImage: (UIImage) -> Void
     var onCancel: () -> Void
@@ -30,8 +28,6 @@ struct CameraPicker: UIViewControllerRepresentable {
         func imagePickerControllerDidCancel(_ picker: UIImagePickerController) { parent.onCancel() }
     }
 }
-
-// MARK: - VisionKit live scanner (design: visionkit_camera_scanner / detect_parking_number_visionkit)
 
 struct ParkingNumberScannerView: UIViewControllerRepresentable {
     var onCandidate: (String?) -> Void
@@ -132,8 +128,6 @@ struct ParkingNumberScannerSheet: View {
             .background(.ultraThinMaterial, in: Capsule())
             .accessibilityAddTraits(.updatesFrequently)
     }
-
-    /// Simulator / no camera / permission denied: read the number from a photo with the Vision framework.
     private var fallback: some View {
         VStack(spacing: 16) {
             Image(systemName: "camera.metering.unknown").font(.system(size: 48)).foregroundStyle(.white)
@@ -161,10 +155,8 @@ struct ParkingNumberScannerSheet: View {
     }
 }
 
-// MARK: - Voice note sheet (design: add_voice_note)
-
 struct VoiceNoteSheet: View {
-    var onSave: (String, String) -> Void          // (fileName, transcript)
+    var onSave: (String, String) -> Void
     @Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
     @State private var fileName: String?

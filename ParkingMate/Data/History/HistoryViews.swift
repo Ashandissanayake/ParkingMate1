@@ -1,8 +1,6 @@
 import SwiftUI
 import MapKit
 
-// MARK: - History + smart search (designs: parking_history_parkingmate, smart_search_1/2)
-
 struct HistoryView: View {
     @Environment(AppContainer.self) private var container
     @State private var query = ""
@@ -122,7 +120,6 @@ struct SessionDetailView: View {
 }
 
 enum MapLinks {
-    /// Apple Maps universal link – opens in Maps on iOS, and in a browser elsewhere (e.g. WhatsApp recipients).
     static func url(for c: CLLocationCoordinate2D, name: String) -> URL {
         var comps = URLComponents(string: "https://maps.apple.com/")!
         comps.queryItems = [URLQueryItem(name: "ll", value: "\(c.latitude),\(c.longitude)"),

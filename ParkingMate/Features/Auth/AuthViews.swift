@@ -1,8 +1,6 @@
 import SwiftUI
 import AuthenticationServices
 
-// MARK: - Splash (design: parkingmate_splash_screen)
-
 struct SplashView: View {
     var body: some View {
         ZStack {
@@ -24,8 +22,6 @@ struct SplashView: View {
         .accessibilityLabel("ParkingMate. Never forget where you parked.")
     }
 }
-
-// MARK: - Auth flow container
 
 enum AuthRoute: Hashable { case createAccount, forgotPassword, checkEmail }
 
@@ -62,8 +58,6 @@ private struct AuthHeader: View {
         }
     }
 }
-
-// MARK: - Sign in (design: parkingmate_sign_in)
 
 struct SignInView: View {
     @Environment(AppContainer.self) private var container
@@ -121,7 +115,7 @@ struct SignInView: View {
                 .font(.subheadline)
             }
             .padding(24)
-            .frame(maxWidth: 480)               // keeps the form readable on iPad
+            .frame(maxWidth: 480)
             .frame(maxWidth: .infinity)
         }
         .background(Theme.background.ignoresSafeArea())
@@ -153,8 +147,6 @@ struct SignInView: View {
         }
     }
 }
-
-// MARK: - Create account (design: parkingmate_create_account)
 
 struct CreateAccountView: View {
     @Environment(AppContainer.self) private var container
@@ -209,8 +201,6 @@ struct CreateAccountView: View {
         }
     }
 }
-
-// MARK: - Forgot password + check email
 
 struct ForgotPasswordView: View {
     @Environment(AppContainer.self) private var container
@@ -268,8 +258,6 @@ struct CheckEmailView: View {
     }
 }
 
-// MARK: - Face ID lock (design: parkingmate_face_id_authentication) + welcome back
-
 struct BiometricLockView: View {
     @Environment(AppContainer.self) private var container
 
@@ -299,7 +287,7 @@ struct BiometricLockView: View {
             .padding(24)
             .frame(maxWidth: 480)
         }
-        .task { await container.lock.unlock() }          // prompt immediately, like the design
+        .task { await container.lock.unlock() }
     }
 }
 

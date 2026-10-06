@@ -1,7 +1,5 @@
 import SwiftUI
 import MapKit
-
-/// Live parking pins from the Overpass API (designs: nearby_parking_map_radar_view, smart search).
 struct NearbyParkingView: View {
     let initialCenter: CLLocationCoordinate2D?
     @Environment(AppContainer.self) private var container
@@ -209,8 +207,6 @@ struct NearbyParkingView: View {
         }
     }
 }
-
-/// Bottom card for the selected pin.
 struct FacilityCard: View {
     let facility: ParkingFacility
     let origin: CLLocationCoordinate2D
@@ -248,8 +244,6 @@ struct FacilityCard: View {
         item.openInMaps(launchOptions: [MKLaunchOptionsDirectionsModeKey: MKLaunchOptionsDirectionsModeDriving])
     }
 }
-
-// MARK: - Facility details (design: location_details_parking_facility)
 
 struct FacilityDetailView: View {
     let facility: ParkingFacility

@@ -12,13 +12,10 @@ protocol GeofenceManaging: AnyObject {
     func startMonitoring(sessionID: UUID, center: CLLocationCoordinate2D, radius: CLLocationDistance)
     func stopMonitoring(sessionID: UUID)
 }
-
-/// Core Location wrapper: live position, compass heading, and geofencing around the parked car.
 @MainActor
 @Observable
 final class LocationService: NSObject, CLLocationManagerDelegate, GeofenceManaging {
     private(set) var location: CLLocation?
-    /// Magnetic/true heading in degrees (0 = north), nil until the compass reports.
     private(set) var heading: Double?
     private(set) var authorization: CLAuthorizationStatus = .notDetermined
     @ObservationIgnored var onRegionEvent: ((RegionEvent) -> Void)?
@@ -37,7 +34,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate, GeofenceManagi
     var isAuthorized: Bool { authorization == .authorizedWhenInUse || authorization == .authorizedAlways }
     var coordinate: CLLocationCoordinate2D? {
         if let coord = location?.coordinate {
-            // When running in iOS Simulator (defaulting to Apple Cupertino), center on Colombo, Sri Lanka
             if abs(coord.latitude - 37.33) < 1.5 && abs(coord.longitude - (-122.03)) < 1.5 {
                 return AppConfig.fallbackCenter
             }
@@ -49,8 +45,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate, GeofenceManagi
     func requestPermission() {
         if authorization == .notDetermined { manager.requestWhenInUseAuthorization() }
     }
-
-    /// Needed so geofence alerts still arrive when the app is closed.
     func requestAlwaysPermission() {
         if authorization == .authorizedWhenInUse { manager.requestAlwaysAuthorization() }
     }
@@ -67,8 +61,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate, GeofenceManagi
         manager.stopUpdatingHeading()
     }
 
-    // MARK: Geofencing
-
     func startMonitoring(sessionID: UUID, center: CLLocationCoordinate2D, radius: CLLocationDistance) {
         guard CLLocationManager.isMonitoringAvailable(for: CLCircularRegion.self) else { return }
         let r = min(radius, manager.maximumRegionMonitoringDistance)
@@ -83,8 +75,6 @@ final class LocationService: NSObject, CLLocationManagerDelegate, GeofenceManagi
             manager.stopMonitoring(for: region)
         }
     }
-
-    // MARK: CLLocationManagerDelegate (called on the main thread; hop explicitly for Swift concurrency)
 
     nonisolated func locationManagerDidChangeAuthorization(_ manager: CLLocationManager) {
         let status = manager.authorizationStatus
@@ -115,6 +105,5 @@ final class LocationService: NSObject, CLLocationManagerDelegate, GeofenceManagi
     }
 
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
-        // Transient failures (e.g. no GPS fix indoors) are expected; the UI shows "waiting for GPS".
     }
 }

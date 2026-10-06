@@ -1,15 +1,11 @@
 import Foundation
 import CoreLocation
 import MapKit
-
-/// Small, pure geometry helpers (unit-tested).
 enum Geo {
     static func distance(from a: CLLocationCoordinate2D, to b: CLLocationCoordinate2D) -> CLLocationDistance {
         CLLocation(latitude: a.latitude, longitude: a.longitude)
             .distance(from: CLLocation(latitude: b.latitude, longitude: b.longitude))
     }
-
-    /// Initial great-circle bearing from `a` to `b`, in degrees (0 ..< 360, 0 = north).
     static func bearing(from a: CLLocationCoordinate2D, to b: CLLocationCoordinate2D) -> Double {
         let lat1 = a.latitude * .pi / 180
         let lat2 = b.latitude * .pi / 180
@@ -19,8 +15,6 @@ enum Geo {
         let degrees = atan2(y, x) * 180 / .pi
         return (degrees + 360).truncatingRemainder(dividingBy: 360)
     }
-
-    /// Wraps any angle into -180 ... 180.
     static func normalized(_ angle: Double) -> Double {
         var a = angle.truncatingRemainder(dividingBy: 360)
         if a > 180 { a -= 360 }
@@ -42,8 +36,6 @@ extension MKMultiPoint {
         return coords
     }
 }
-
-/// A Hashable wrapper so coordinates can travel inside navigation routes.
 struct GeoPoint: Hashable, Codable, Sendable {
     var latitude: Double
     var longitude: Double
@@ -53,8 +45,6 @@ struct GeoPoint: Hashable, Codable, Sendable {
 }
 
 extension Geo {
-    /// Spoken-style direction of the car relative to where the phone is pointing.
-    /// `relativeBearing` = bearing to car − device heading (any angle).
     static func directionPhrase(relativeBearing: Double) -> String {
         let a = normalized(relativeBearing)
         switch abs(a) {

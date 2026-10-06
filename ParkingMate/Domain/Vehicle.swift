@@ -24,7 +24,6 @@ struct Vehicle: Identifiable, Equatable, Hashable, Sendable {
 struct FavoriteLocation: Identifiable, Equatable, Hashable, Sendable {
     var id = UUID()
     var name: String
-    /// e.g. "B2 - Blue - A124"
     var detail: String
     var latitude: Double
     var longitude: Double

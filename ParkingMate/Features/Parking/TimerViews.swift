@@ -8,8 +8,6 @@ private struct NoActiveSession: View {
     }
 }
 
-// MARK: - Parking timer (design: parking_timer)
-
 struct ParkingTimerView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.dismiss) private var dismiss
@@ -63,8 +61,6 @@ struct ParkingTimerView: View {
         } message: { Text("Your car stays in History. Reminders and geofence alerts will stop.") }
     }
 }
-
-// MARK: - Extend session (designs: extend_parking_session, session_extended_successfully_*)
 
 struct ExtendSessionView: View {
     @Environment(AppContainer.self) private var container
@@ -168,8 +164,6 @@ struct SessionExtendedView: View {
     }
 }
 
-// MARK: - Reminders (designs: parking_reminders, upcoming_reminders_alerts)
-
 struct ParkingRemindersView: View {
     @Environment(AppContainer.self) private var container
     @EnvironmentObject private var settings: AppSettings
@@ -237,8 +231,6 @@ struct ParkingRemindersView: View {
         pending = await container.notifications.pendingReminders()
     }
 }
-
-// MARK: - Cost tracker (design: parking_cost_tracker)
 
 struct CostTrackerView: View {
     let sessionID: UUID

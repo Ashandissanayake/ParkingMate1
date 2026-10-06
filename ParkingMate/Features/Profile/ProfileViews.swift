@@ -1,7 +1,5 @@
 import SwiftUI
 
-// MARK: - Profile & settings (designs: profile_settings, parkingmate_settings)
-
 struct ProfileView: View {
     @Environment(AppContainer.self) private var container
     @EnvironmentObject private var settings: AppSettings
@@ -87,8 +85,6 @@ struct EditProfileView: View {
     }
 }
 
-// MARK: - Accessibility settings (design: accessibility_settings)
-
 struct AccessibilitySettingsView: View {
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.accessibilityVoiceOverEnabled) private var voiceOver
@@ -123,8 +119,6 @@ struct AccessibilitySettingsView: View {
     }
 }
 
-// MARK: - Face ID & security
-
 struct SecuritySettingsView: View {
     @Environment(AppContainer.self) private var container
     @EnvironmentObject private var settings: AppSettings
@@ -144,8 +138,6 @@ struct SecuritySettingsView: View {
         .navigationTitle("Face ID & Security")
         .navigationBarTitleDisplayMode(.inline)
     }
-
-    /// Verify the user can actually authenticate before turning the lock on (avoids locking yourself out).
     private func setLock(_ on: Bool) {
         guard on else { settings.biometricLockEnabled = false; container.lock.reset(); return }
         Task {
@@ -158,8 +150,6 @@ struct SecuritySettingsView: View {
         }
     }
 }
-
-// MARK: - iCloud sync (design: icloud_sync)
 
 struct ICloudSyncView: View {
     @Environment(AppContainer.self) private var container

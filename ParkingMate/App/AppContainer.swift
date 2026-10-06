@@ -2,14 +2,10 @@ import Foundation
 import CoreLocation
 import CoreData
 import Observation
-
-/// Hint captured when Core Motion thinks the user just parked.
 struct DetectionHint: Equatable {
     var floor: String?
     var detectedAt: Date
 }
-
-/// Composition root. Builds every service once and wires them together (manual dependency injection).
 @MainActor
 @Observable
 final class AppContainer {
@@ -77,16 +73,12 @@ final class AppContainer {
         location.onRegionEvent = { [weak self] event in self?.handle(event) }
         motion.onParked = { [weak self] in self?.handleParkingDetected() }
         bluetooth.onCarDisconnected = { [weak self] in self?.handleCarDisconnected() }
-
-        // Pick up changes that arrive from iCloud / other processes (App Intents).
         remoteChangeTask = Task { [weak self] in
             for await _ in NotificationCenter.default.notifications(named: .NSPersistentStoreRemoteChange) {
                 self?.store.reload()
             }
         }
     }
-
-    /// Start sensors once the user is signed in.
     func startServices() {
         location.start()
         altitude.start()
@@ -102,8 +94,6 @@ final class AppContainer {
     func applyBluetoothSetting() {
         if settings.bluetoothAutoSaveEnabled { bluetooth.startMonitoring() } else { bluetooth.stopMonitoring() }
     }
-
-    // MARK: Event handling
 
     private func handle(_ event: RegionEvent) {
         switch event {

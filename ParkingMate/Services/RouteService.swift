@@ -23,16 +23,12 @@ struct WalkingRoute {
 protocol RouteProviding {
     func walkingRoute(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) async throws -> WalkingRoute
 }
-
-/// MapKit directions provider with smart fallbacks (Walking -> Driving -> Direct Navigation Path).
 struct MapKitRouteProvider: RouteProviding {
     func walkingRoute(from: CLLocationCoordinate2D, to: CLLocationCoordinate2D) async throws -> WalkingRoute {
         let request = MKDirections.Request()
         request.source = MKMapItem(placemark: MKPlacemark(coordinate: from))
         request.destination = MKMapItem(placemark: MKPlacemark(coordinate: to))
         request.transportType = .walking
-
-        // 1. Try MapKit pedestrian walking directions
         if let response = try? await MKDirections(request: request).calculate(),
            let route = response.routes.first {
             let steps = route.steps.compactMap { step -> RouteStep? in
@@ -42,8 +38,6 @@ struct MapKitRouteProvider: RouteProviding {
             return WalkingRoute(polyline: route.polyline, distance: route.distance,
                                 expectedTravelTime: route.expectedTravelTime, steps: steps)
         }
-
-        // 2. Try driving road network if pedestrian sidewalks aren't mapped in this region
         request.transportType = .automobile
         if let response = try? await MKDirections(request: request).calculate(),
            let route = response.routes.first {
@@ -54,8 +48,6 @@ struct MapKitRouteProvider: RouteProviding {
             return WalkingRoute(polyline: route.polyline, distance: route.distance,
                                 expectedTravelTime: route.expectedTravelTime * 2.5, steps: steps)
         }
-
-        // 3. Fallback street-following navigation path so the line ALWAYS displays on map!
         let mid = CLLocationCoordinate2D(latitude: from.latitude, longitude: to.longitude)
         var coordinates = [from, mid, to]
         let polyline = MKPolyline(coordinates: &coordinates, count: 3)

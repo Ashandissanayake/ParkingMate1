@@ -1,7 +1,5 @@
 import Foundation
 import Security
-
-/// Abstraction so AuthService can be unit-tested with an in-memory fake.
 protocol SecretStoring: AnyObject {
     func set(_ data: Data, for key: String) throws
     func get(_ key: String) -> Data?

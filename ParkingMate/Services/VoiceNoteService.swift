@@ -14,24 +14,18 @@ enum VoiceNoteError: LocalizedError {
         }
     }
 }
-
-/// Records a short voice note (AVAudioRecorder), plays it back, and transcribes it with the Speech
-/// framework – on-device whenever the recogniser supports it.
 @MainActor
 @Observable
 final class VoiceNoteService: NSObject, AVAudioPlayerDelegate {
     private(set) var isRecording = false
     private(set) var isPlaying = false
     private(set) var isTranscribing = false
-    /// 0...1 normalised input level for the waveform.
     private(set) var level: Double = 0
     private(set) var elapsed: TimeInterval = 0
 
     @ObservationIgnored private var recorder: AVAudioRecorder?
     @ObservationIgnored private var player: AVAudioPlayer?
     @ObservationIgnored private var meterTimer: Timer?
-
-    // MARK: Recording
 
     func startRecording() async throws -> String {
         guard await AVAudioApplication.requestRecordPermission() else { throw VoiceNoteError.microphoneDenied }
@@ -71,12 +65,10 @@ final class VoiceNoteService: NSObject, AVAudioPlayerDelegate {
     private func updateMeter() {
         guard let recorder, recorder.isRecording else { return }
         recorder.updateMeters()
-        let power = recorder.averagePower(forChannel: 0)            // -160 ... 0 dB
+        let power = recorder.averagePower(forChannel: 0)
         level = Double(max(0, min(1, (power + 50) / 50)))
         elapsed = recorder.currentTime
     }
-
-    // MARK: Playback
 
     func play(fileName: String) {
         stopPlayback()
@@ -98,8 +90,6 @@ final class VoiceNoteService: NSObject, AVAudioPlayerDelegate {
     nonisolated func audioPlayerDidFinishPlaying(_ player: AVAudioPlayer, successfully flag: Bool) {
         Task { @MainActor in self.isPlaying = false }
     }
-
-    // MARK: Speech-to-text
 
     func transcribe(fileName: String) async throws -> String {
         let status = await withCheckedContinuation { (cont: CheckedContinuation<SFSpeechRecognizerAuthorizationStatus, Never>) in

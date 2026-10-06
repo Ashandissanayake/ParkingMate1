@@ -16,8 +16,6 @@ protocol ReminderScheduling: AnyObject {
     func pendingReminders() async -> [PendingReminder]
     func notifyNow(id: String, title: String, body: String, userInfo: [String: String])
 }
-
-/// UserNotifications: scheduled expiry reminders with an inline "Extend 30 min" action, plus immediate alerts.
 @MainActor
 final class NotificationService: NSObject, ReminderScheduling, UNUserNotificationCenterDelegate {
     static let expiryCategory = "PARKING_EXPIRY"
@@ -26,7 +24,7 @@ final class NotificationService: NSObject, ReminderScheduling, UNUserNotificatio
     static let savePromptCategory = "PARKING_DETECTED"
 
     var onExtend: ((UUID, Int) -> Void)?
-    var onOpenRoute: ((String) -> Void)?    // "findMyCar" | "saveParking"
+    var onOpenRoute: ((String) -> Void)?
 
     private var center: UNUserNotificationCenter { .current() }
 
@@ -94,8 +92,6 @@ final class NotificationService: NSObject, ReminderScheduling, UNUserNotificatio
     }
 
     static func identifier(_ kind: ReminderPlan.Kind, _ id: UUID) -> String { "\(kind.rawValue)-\(id.uuidString)" }
-
-    // MARK: UNUserNotificationCenterDelegate
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter,
                                             willPresent notification: UNNotification) async -> UNNotificationPresentationOptions {

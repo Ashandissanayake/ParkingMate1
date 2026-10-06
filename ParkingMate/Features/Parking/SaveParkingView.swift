@@ -3,8 +3,6 @@ import PhotosUI
 #if canImport(ConfettiSwiftUI)
 import ConfettiSwiftUI
 #endif
-
-/// "Save My Parking" – designs save_my_parking_1/2/3 + save_my_parking_details_form + save_parking_location.
 struct SaveParkingView: View {
     let prefill: ParkingPrefill
     var body: some View { SaveParkingForm(prefill: prefill) }
@@ -305,8 +303,6 @@ private struct SaveParkingForm: View {
 extension ParkingSession: Hashable {
     func hash(into hasher: inout Hasher) { hasher.combine(id) }
 }
-
-/// Confirmation (design: parking_saved_save_parking / parking_spot_confirmed_saved).
 struct ParkingSavedView: View {
     let session: ParkingSession
     var finish: (_ viewOnMap: Bool) -> Void

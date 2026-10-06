@@ -1,7 +1,5 @@
 import AppIntents
 import Foundation
-
-/// Siri / Shortcuts: "Where is my car in ParkingMate?" (App Intents – advanced iOS SDK feature).
 struct WhereIsMyCarIntent: AppIntent {
     static let title: LocalizedStringResource = "Where is my car?"
     static let description = IntentDescription("Tells you where your car is parked and how long is left on the meter.")

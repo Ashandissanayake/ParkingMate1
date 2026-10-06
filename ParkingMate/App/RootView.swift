@@ -1,6 +1,4 @@
 import SwiftUI
-
-/// Splash → auth → (Face ID lock) → main app.
 struct RootView: View {
     @Environment(AppContainer.self) private var container
     @State private var showSplash = true
@@ -25,7 +23,7 @@ struct RootView: View {
             }
         }
         .task {
-            container.lock.lockIfNeeded()        // cold launch2
+            container.lock.lockIfNeeded()
             try? await Task.sleep(for: .seconds(1.5))
             withAnimation { showSplash = false }
         }
@@ -60,8 +58,6 @@ enum MainTab: String, CaseIterable, Identifiable, Hashable {
         }
     }
 }
-
-/// iPhone → bottom tab bar. iPad (regular width) → sidebar + detail (multi-device adaptation, LO1).
 struct MainView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.horizontalSizeClass) private var sizeClass

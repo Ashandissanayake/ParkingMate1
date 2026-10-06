@@ -1,8 +1,5 @@
 import SwiftUI
 import Combine
-
-/// User preferences, persisted in UserDefaults. (`ObservableObject` + `@Published` so property observers
-/// reliably write through to UserDefaults.)
 final class AppSettings: ObservableObject {
     enum Appearance: String, CaseIterable, Identifiable {
         case system, light, dark
@@ -50,7 +47,6 @@ final class AppSettings: ObservableObject {
     @Published var bluetoothAutoSaveEnabled: Bool { didSet { defaults.set(bluetoothAutoSaveEnabled, forKey: Key.bluetoothAutoSave) } }
     @Published var voiceAnnouncementsEnabled: Bool { didSet { defaults.set(voiceAnnouncementsEnabled, forKey: Key.voiceAnnouncements) } }
     @Published var autoCheckoutEnabled: Bool { didSet { defaults.set(autoCheckoutEnabled, forKey: Key.autoCheckout) } }
-    // Accessibility
     @Published var largerText: Bool { didSet { defaults.set(largerText, forKey: Key.largerText) } }
     @Published var increaseContrast: Bool { didSet { defaults.set(increaseContrast, forKey: Key.contrast) } }
     @Published var reduceMotion: Bool { didSet { defaults.set(reduceMotion, forKey: Key.reduceMotion) } }
@@ -77,14 +73,10 @@ final class AppSettings: ObservableObject {
         boldText = defaults.bool(forKey: Key.boldText)
         buttonShapes = defaults.bool(forKey: Key.buttonShapes)
     }
-
-    /// Read *before* the Core Data stack is created (the store type depends on it).
     static func storedICloudPreference(defaults: UserDefaults = .standard) -> Bool {
         defaults.object(forKey: Key.iCloud) as? Bool ?? false
     }
 }
-
-/// What the store needs to know about preferences (lets tests inject a plain struct).
 protocol StoreSettings {
     var remindersEnabled: Bool { get }
     var reminderLeadMinutes: Int { get }

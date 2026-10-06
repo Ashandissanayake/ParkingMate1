@@ -8,8 +8,6 @@ extension ActivitySample {
                   confidence: a.confidence == .high ? .high : (a.confidence == .medium ? .medium : .low))
     }
 }
-
-/// Core Motion activity recognition → "you just parked" events (drive → walk transition).
 @MainActor
 @Observable
 final class MotionActivityService {
@@ -51,8 +49,6 @@ final class MotionActivityService {
         }
     }
 }
-
-/// Barometer-based relative altitude (CMAltimeter) – used to estimate the car-park level (B2, L3 …).
 @MainActor
 @Observable
 final class AltitudeService {
@@ -73,8 +69,6 @@ final class AltitudeService {
             Task { @MainActor in self?.relativeAltitude = meters }
         }
     }
-
-    /// Treat "here and now" as ground level (restarts the relative reference).
     func recalibrate() {
         altimeter.stopRelativeAltitudeUpdates()
         relativeAltitude = 0

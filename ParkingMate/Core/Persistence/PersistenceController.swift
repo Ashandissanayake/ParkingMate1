@@ -1,8 +1,4 @@
 import CoreData
-
-/// Owns the Core Data stack. When iCloud sync is enabled (and the user is signed in to iCloud) it uses
-/// `NSPersistentCloudKitContainer`, otherwise a plain `NSPersistentContainer`. If the CloudKit store
-/// fails to load (e.g. capability not configured) it falls back to local-only storage automatically.
 final class PersistenceController {
     static let shared = PersistenceController(cloudKitEnabled: AppSettings.storedICloudPreference())
 

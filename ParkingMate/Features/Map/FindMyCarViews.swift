@@ -11,8 +11,6 @@ private struct NoCarView: View {
     }
 }
 
-// MARK: - Find My Car (designs: find_my_car, find_my_car_map_view, find_my_car_colombo_city_mall)
-
 struct FindMyCarView: View {
     @Environment(AppContainer.self) private var container
     var body: some View {
@@ -180,8 +178,6 @@ private struct FindMyCarContent: View {
         }
     }
 }
-
-/// Tiny playback helper (AVAudioPlayer) for the saved voice note.
 @MainActor
 final class VoicePlaybackModel: ObservableObject {
     @Published var isPlaying = false
@@ -198,8 +194,6 @@ final class VoicePlaybackModel: ObservableObject {
         }
     }
 }
-
-// MARK: - Radar (magnetometer heading + bearing to car)
 
 struct CarRadarView: View {
     let relativeBearing: Double
@@ -221,8 +215,6 @@ struct CarRadarView: View {
         .accessibilityHidden(true)
     }
 }
-
-// MARK: - Turn-by-turn style navigation (design: navigation_to_car)
 
 struct NavigateToCarView: View {
     @Environment(AppContainer.self) private var container

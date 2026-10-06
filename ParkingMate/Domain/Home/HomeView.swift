@@ -1,6 +1,4 @@
 import SwiftUI
-
-/// Dashboard (design: parking_navigation_smart_features_ui "Quick Actions").
 struct HomeView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.horizontalSizeClass) private var sizeClass
@@ -119,8 +117,6 @@ struct HomeView: View {
         }
     }
 }
-
-/// The "active parking" summary on the dashboard.
 struct ActiveSessionCard: View {
     @Environment(AppContainer.self) private var container
 

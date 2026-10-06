@@ -1,9 +1,6 @@
 import Foundation
 import UIKit
 import Vision
-
-/// Vision framework OCR: finds the bay number ("A124") in a photo of a pillar / wall sign.
-/// The live camera version (VisionKit DataScanner) is in `ParkingNumberScannerView`.
 enum TextRecognitionService {
     static func recognizeText(in image: UIImage) async throws -> [String] {
         guard let cgImage = image.cgImage else { return [] }
@@ -11,7 +8,7 @@ enum TextRecognitionService {
             DispatchQueue.global(qos: .userInitiated).async {
                 let request = VNRecognizeTextRequest()
                 request.recognitionLevel = .accurate
-                request.usesLanguageCorrection = false          // bay codes aren't dictionary words
+                request.usesLanguageCorrection = false
                 let handler = VNImageRequestHandler(cgImage: cgImage, orientation: .init(image.imageOrientation))
                 do {
                     try handler.perform([request])

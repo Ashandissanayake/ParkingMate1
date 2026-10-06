@@ -1,18 +1,13 @@
 import Foundation
 
 enum Formatters {
-    /// 85 m / 1.2 km
     static func distance(_ meters: Double) -> String {
         meters < 1000 ? "\(Int(meters.rounded())) m" : String(format: "%.1f km", meters / 1000)
     }
-
-    /// 1:58:30 – used by the big timer ring.
     static func clock(_ interval: TimeInterval) -> String {
         let total = max(0, Int(interval.rounded(.down)))
         return String(format: "%d:%02d:%02d", total / 3600, (total % 3600) / 60, total % 60)
     }
-
-    /// 2h 15m – used in summaries.
     static func duration(_ interval: TimeInterval) -> String {
         let minutes = max(0, Int((interval / 60).rounded(.down)))
         let h = minutes / 60, m = minutes % 60

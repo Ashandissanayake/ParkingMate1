@@ -1,8 +1,6 @@
 import Foundation
 import CoreLocation
 
-// MARK: - HTTP abstraction (so tests can stub the network)
-
 protocol HTTPClient {
     func data(for request: URLRequest) async throws -> (Data, URLResponse)
 }
@@ -13,8 +11,6 @@ struct URLSessionHTTPClient: HTTPClient {
         try await session.data(for: request)
     }
 }
-
-// MARK: - Overpass (OpenStreetMap) response mapping
 
 struct OverpassResponse: Decodable {
     struct Element: Decodable {
@@ -36,7 +32,6 @@ enum OverpassMapper {
             let tags = element.tags ?? [:]
             guard let lat = element.lat ?? element.center?.lat,
                   let lon = element.lon ?? element.center?.lon else { return nil }
-            // Skip private/customer-only lots – they are no use to a visiting driver.
             if let access = tags["access"], ["private", "no", "permit"].contains(access) { return nil }
 
             let type = tags["parking"]
@@ -57,8 +52,6 @@ enum OverpassMapper {
         }
     }
 }
-
-// MARK: - Cache (offline support)
 
 protocol FacilityCaching {
     func load(key: String) -> [ParkingFacility]?
@@ -82,11 +75,8 @@ struct DiskFacilityCache: FacilityCaching {
     }
 }
 
-// MARK: - Service
-
 struct FacilityResult {
     let facilities: [ParkingFacility]
-    /// true when the network failed and the last saved result for this area is shown instead.
     let isFromCache: Bool
 }
 
@@ -100,14 +90,9 @@ enum FacilityError: LocalizedError {
         }
     }
 }
-
-/// Service protocol supplying nearby parking facilities and comprehensive Sri Lanka parking data.
 protocol FacilityProviding {
     func nearby(to coordinate: CLLocationCoordinate2D, radius: Int) async throws -> FacilityResult
 }
-
-/// REST integration (LO3): POSTs an Overpass QL query to the public OpenStreetMap Overpass API and maps
-/// the JSON into `ParkingFacility` values. Results are cached per ~1 km tile for offline use.
 struct FacilityService: FacilityProviding {
     var client: HTTPClient = URLSessionHTTPClient()
     var cache: FacilityCaching = DiskFacilityCache()
@@ -129,7 +114,6 @@ struct FacilityService: FacilityProviding {
     }
 
     func nearby(to coordinate: CLLocationCoordinate2D, radius: Int = 1200) async throws -> FacilityResult {
-        // If searching across all Sri Lanka (large radius or island center)
         if radius >= 40_000 || (coordinate.latitude > 7.0 && coordinate.latitude < 8.5 && coordinate.longitude > 80.0 && coordinate.longitude < 81.5 && radius > 10_000) {
             let all = Self.allSriLankaFacilities.sorted { $0.distance(from: coordinate) < $1.distance(from: coordinate) }
             return FacilityResult(facilities: all, isFromCache: false)
@@ -175,7 +159,6 @@ struct FacilityService: FacilityProviding {
     static var defaultSriLankaFacilities: [ParkingFacility] { allSriLankaFacilities }
 
     static let allSriLankaFacilities: [ParkingFacility] = [
-        // MARK: - Colombo & Suburbs
         ParkingFacility(id: "sl/ccc", name: "Colombo City Centre (CCC) Parking", latitude: 6.9174, longitude: 79.8569,
                         operatorName: "Colombo City Centre", isFree: false, charge: "LKR 200/hr", capacity: 450,
                         openingHours: "10:00 - 22:00", isCovered: true, hasEVCharging: true, parkingType: "multi-storey"),
@@ -236,8 +219,6 @@ struct FacilityService: FacilityProviding {
         ParkingFacility(id: "sl/mount_beach", name: "Mount Lavinia Beach Public Car Park", latitude: 6.8355, longitude: 79.8630,
                         operatorName: "Mount Lavinia MC", isFree: true, charge: "Free", capacity: 150,
                         openingHours: "24/7", isCovered: false, hasEVCharging: false, parkingType: "surface"),
-
-        // MARK: - Kandy & Central Hills
         ParkingFacility(id: "sl/kcc", name: "Kandy City Centre (KCC) Multi-Storey", latitude: 7.2936, longitude: 80.6350,
                         operatorName: "KCC", isFree: false, charge: "LKR 150/hr", capacity: 600,
                         openingHours: "08:30 - 21:30", isCovered: true, hasEVCharging: true, parkingType: "multi-storey"),
@@ -256,8 +237,6 @@ struct FacilityService: FacilityProviding {
         ParkingFacility(id: "sl/kandy_station", name: "Kandy Railway Station Car Park", latitude: 7.2900, longitude: 80.6315,
                         operatorName: "Sri Lanka Railways", isFree: false, charge: "LKR 100/hr", capacity: 120,
                         openingHours: "24/7", isCovered: false, hasEVCharging: false, parkingType: "surface"),
-
-        // MARK: - Galle & Southern Coast
         ParkingFacility(id: "sl/galle", name: "Galle Fort Rampart Parking", latitude: 6.0305, longitude: 80.2170,
                         operatorName: "Galle Heritage", isFree: true, charge: "Free", capacity: 90,
                         openingHours: "24/7", isCovered: false, hasEVCharging: false, parkingType: "surface"),
@@ -279,8 +258,6 @@ struct FacilityService: FacilityProviding {
         ParkingFacility(id: "sl/matara", name: "Matara Star Fort & Beach Park Car Park", latitude: 5.9450, longitude: 80.5480,
                         operatorName: "Matara MC", isFree: true, charge: "Free", capacity: 140,
                         openingHours: "24/7", isCovered: false, hasEVCharging: false, parkingType: "surface"),
-
-        // MARK: - Gampaha & Negombo
         ParkingFacility(id: "sl/bia", name: "Airport (BIA) Long-Term Parking", latitude: 7.1808, longitude: 79.8841,
                         operatorName: "AASL", isFree: false, charge: "LKR 300/hr", capacity: 2000,
                         openingHours: "24/7", isCovered: true, hasEVCharging: true, parkingType: "multi-storey"),
@@ -293,8 +270,6 @@ struct FacilityService: FacilityProviding {
         ParkingFacility(id: "sl/negombo_fort", name: "Negombo Dutch Fort & Lagoon Car Park", latitude: 7.2100, longitude: 79.8370,
                         operatorName: "UDA", isFree: false, charge: "LKR 100/hr", capacity: 100,
                         openingHours: "07:00 - 20:00", isCovered: false, hasEVCharging: false, parkingType: "surface"),
-
-        // MARK: - Nuwara Eliya & Hill Country
         ParkingFacility(id: "sl/gregory", name: "Gregory Lake Waterfront Public Parking (Nuwara Eliya)", latitude: 6.9535, longitude: 80.7815,
                         operatorName: "Nuwara Eliya MC", isFree: false, charge: "LKR 150/entry", capacity: 250,
                         openingHours: "06:00 - 21:00", isCovered: false, hasEVCharging: false, parkingType: "surface"),
@@ -307,8 +282,6 @@ struct FacilityService: FacilityProviding {
         ParkingFacility(id: "sl/ella", name: "Ella Town Centre & Nine Arches Bridge Parking", latitude: 6.8667, longitude: 81.0466,
                         operatorName: "Ella Pradeshiya Sabha", isFree: true, charge: "Free", capacity: 100,
                         openingHours: "24/7", isCovered: false, hasEVCharging: false, parkingType: "surface"),
-
-        // MARK: - Cultural Triangle & North Central
         ParkingFacility(id: "sl/sigiriya", name: "Sigiriya Rock Fortress Main Visitor Car Park", latitude: 7.9570, longitude: 80.7600,
                         operatorName: "CCF Sigiriya", isFree: true, charge: "Free", capacity: 400,
                         openingHours: "06:30 - 18:30", isCovered: false, hasEVCharging: false, parkingType: "surface"),
@@ -324,13 +297,9 @@ struct FacilityService: FacilityProviding {
         ParkingFacility(id: "sl/polonnaruwa", name: "Polonnaruwa Ancient City Visitor Parking", latitude: 7.9400, longitude: 81.0020,
                         operatorName: "CCF Polonnaruwa", isFree: false, charge: "LKR 100/entry", capacity: 300,
                         openingHours: "07:00 - 18:00", isCovered: false, hasEVCharging: false, parkingType: "surface"),
-
-        // MARK: - Kurunegala
         ParkingFacility(id: "sl/kurunegala", name: "Kurunegala Central Commercial Car Park", latitude: 7.4870, longitude: 80.3645,
                         operatorName: "Kurunegala MC", isFree: false, charge: "LKR 100/hr", capacity: 200,
                         openingHours: "07:00 - 21:00", isCovered: false, hasEVCharging: false, parkingType: "surface"),
-
-        // MARK: - Jaffna & Northern Province
         ParkingFacility(id: "sl/jaffna_fort", name: "Jaffna Fort Coastal Car Park", latitude: 9.6615, longitude: 80.0080,
                         operatorName: "Jaffna Heritage", isFree: true, charge: "Free", capacity: 150,
                         openingHours: "24/7", isCovered: false, hasEVCharging: false, parkingType: "surface"),
@@ -340,8 +309,6 @@ struct FacilityService: FacilityProviding {
         ParkingFacility(id: "sl/jaffna_station", name: "Jaffna Central Railway Station Parking", latitude: 9.6655, longitude: 80.0210,
                         operatorName: "Sri Lanka Railways", isFree: false, charge: "LKR 100/hr", capacity: 120,
                         openingHours: "24/7", isCovered: false, hasEVCharging: false, parkingType: "surface"),
-
-        // MARK: - Trincomalee & Eastern Coast
         ParkingFacility(id: "sl/koneswaram", name: "Fort Frederick & Koneswaram Temple Car Park", latitude: 8.5875, longitude: 81.2405,
                         operatorName: "Trincomalee Tourism", isFree: false, charge: "LKR 100/entry", capacity: 200,
                         openingHours: "06:00 - 20:00", isCovered: false, hasEVCharging: false, parkingType: "surface"),

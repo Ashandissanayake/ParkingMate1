@@ -1,12 +1,6 @@
 import Foundation
 
-// Pure, side-effect-free logic. Everything in this file is covered by the Swift Testing suite.
-
-// MARK: - Parking number recognition (used by Vision / VisionKit)
-
 enum ParkingNumberParser {
-    /// Picks the most likely bay number (e.g. "A124", "B-14") from OCR strings.
-    /// Heuristic: letter prefix + digits; more digits wins (so "A124" beats the level marker "B2").
     static func bestCandidate(from strings: [String]) -> String? {
         let pattern = #"(?<![A-Za-z0-9])([A-Za-z]{1,2})[\s\-]?(\d{1,3})(?![A-Za-z0-9])"#
         guard let regex = try? NSRegularExpression(pattern: pattern) else { return nil }
@@ -27,10 +21,7 @@ enum ParkingNumberParser {
     }
 }
 
-// MARK: - Floor estimation from barometer (CMAltimeter relative altitude)
-
 enum FloorEstimator {
-    /// -6.2 m ≈ two floors below ground → "B2".  Typical car-park floor height is ~3 m.
     static func label(relativeAltitude: Double, floorHeight: Double = 3.0) -> String {
         guard floorHeight > 0 else { return "G" }
         let index = Int((relativeAltitude / floorHeight).rounded())
@@ -42,8 +33,6 @@ enum FloorEstimator {
     }
 }
 
-// MARK: - Reminders
-
 struct ReminderPlan: Equatable {
     enum Kind: String { case warning, expired }
     let kind: Kind
@@ -53,7 +42,6 @@ struct ReminderPlan: Equatable {
 }
 
 enum ReminderPlanner {
-    /// A "x minutes left" warning and an "expired" alert – only for dates still in the future.
     static func plan(placeLabel: String, expiry: Date, now: Date, leadMinutes: Int) -> [ReminderPlan] {
         var plans: [ReminderPlan] = []
         let warningDate = expiry.addingTimeInterval(-Double(leadMinutes) * 60)
@@ -71,8 +59,6 @@ enum ReminderPlanner {
     }
 }
 
-// MARK: - Smart parking detection (Core Motion activity transitions)
-
 struct ActivitySample: Equatable {
     enum Confidence: Int { case low = 0, medium, high }
     var automotive = false
@@ -81,12 +67,8 @@ struct ActivitySample: Equatable {
     var stationary = false
     var confidence: Confidence = .medium
 }
-
-/// Detects "was driving, now on foot" – the moment the user has parked.
 struct ParkingDetectionStateMachine {
     private(set) var wasDriving = false
-
-    /// Returns true exactly once per drive→walk transition.
     mutating func ingest(_ sample: ActivitySample) -> Bool {
         guard sample.confidence != .low else { return false }
         if sample.automotive {
@@ -102,8 +84,6 @@ struct ParkingDetectionStateMachine {
 
     mutating func reset() { wasDriving = false }
 }
-
-// MARK: - Credential validation
 
 enum CredentialValidator {
     enum Issue: Equatable, LocalizedError {
@@ -145,8 +125,6 @@ enum CredentialValidator {
         return nil
     }
 }
-
-// MARK: - History search (designs: smart_search_1 / smart_search_2)
 
 enum HistoryScope: String, CaseIterable, Identifiable {
     case location = "Location", date = "Date", vehicle = "Vehicle", facility = "Facility"

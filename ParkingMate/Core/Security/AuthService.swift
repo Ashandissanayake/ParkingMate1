@@ -24,10 +24,6 @@ enum AuthError: LocalizedError, Equatable {
         }
     }
 }
-
-/// Local account service. Credentials are salted + stretched with SHA-256 and kept in the Keychain; the
-/// profile lives in UserDefaults. (For a production app you would replace this with a backend such as
-/// Firebase Auth – the protocol-free API below makes that swap a single-class change.)
 @MainActor
 @Observable
 final class AuthService {
@@ -44,8 +40,6 @@ final class AuthService {
         self.defaults = defaults
         if let email = defaults.string(forKey: Self.sessionKey) { currentUser = loadProfile(email: email) }
     }
-
-    // MARK: Register / sign in
 
     func register(fullName: String, email: String, phone: String, password: String, confirm: String) throws {
         if let issue = CredentialValidator.validateRegistration(name: fullName, email: email, phone: phone,
@@ -78,8 +72,6 @@ final class AuthService {
             _ = try? await FirebaseService.shared.signIn(email: key, password: password)
         }
     }
-
-    /// Sign in with Apple – no local password; we just keep the name/email Apple returns.
     func signInWithApple(userID: String, fullName: String?, email: String?) {
         let key = Self.normalize(email ?? "\(userID)@privaterelay.appleid.com")
         let profile = loadProfile(email: key)
@@ -93,8 +85,6 @@ final class AuthService {
         currentUser = nil
         FirebaseService.shared.signOut()
     }
-
-    /// Password reset is simulated locally + requests Firebase password reset.
     func requestPasswordReset(email: String) throws {
         guard CredentialValidator.isValidEmail(email) else { throw AuthError.validation(.invalidEmail) }
         guard secrets.get(Self.normalize(email)) != nil else { throw AuthError.accountNotFound }
@@ -111,8 +101,6 @@ final class AuthService {
         saveProfile(user)
         currentUser = user
     }
-
-    // MARK: Helpers
 
     private func startSession(for profile: UserProfile) {
         defaults.set(profile.email, forKey: Self.sessionKey)
