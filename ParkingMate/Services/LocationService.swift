@@ -107,3 +107,4 @@ final class LocationService: NSObject, CLLocationManagerDelegate, GeofenceManagi
     nonisolated func locationManager(_ manager: CLLocationManager, didFailWithError error: Error) {
     }
 }
+
