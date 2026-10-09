@@ -88,3 +88,4 @@ final class AppLockController {
     func dismissWelcome() { showWelcomeBack = false }
     func reset() { isLocked = false; showWelcomeBack = false; lastMessage = nil }
 }
+
