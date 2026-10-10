@@ -319,3 +319,4 @@ struct FacilityDetailView: View {
         Haptics.success()
     }
 }
+
