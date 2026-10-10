@@ -320,3 +320,4 @@ struct FacilityService: FacilityProviding {
                         openingHours: "24/7", isCovered: false, hasEVCharging: false, parkingType: "surface")
     ]
 }
+
