@@ -29,3 +29,4 @@ struct FavoriteLocation: Identifiable, Equatable, Hashable, Sendable {
     var longitude: Double
     var point: GeoPoint { GeoPoint(latitude: latitude, longitude: longitude) }
 }
+
