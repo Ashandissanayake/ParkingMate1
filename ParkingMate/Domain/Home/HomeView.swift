@@ -172,3 +172,4 @@ struct ActiveSessionCard: View {
         }
     }
 }
+
