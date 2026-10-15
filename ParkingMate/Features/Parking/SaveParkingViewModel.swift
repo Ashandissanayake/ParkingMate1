@@ -72,3 +72,4 @@ enum ImageCompressor {
         return resized.jpegData(compressionQuality: quality)
     }
 }
+
