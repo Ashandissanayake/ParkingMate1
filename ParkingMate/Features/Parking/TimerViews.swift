@@ -298,3 +298,4 @@ struct CostTrackerView: View {
         }
     }
 }
+
