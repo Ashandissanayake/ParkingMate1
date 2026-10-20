@@ -125,3 +125,4 @@ final class VoiceNoteService: NSObject, AVAudioPlayerDelegate {
         try? FileManager.default.removeItem(at: VoiceNoteStorage.url(for: fileName))
     }
 }
+
