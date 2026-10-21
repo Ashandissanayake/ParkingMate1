@@ -60,3 +60,4 @@ struct MapKitRouteProvider: RouteProviding {
         return WalkingRoute(polyline: polyline, distance: distance, expectedTravelTime: travelTime, steps: steps)
     }
 }
+
