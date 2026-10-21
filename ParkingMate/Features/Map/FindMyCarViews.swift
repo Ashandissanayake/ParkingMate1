@@ -372,3 +372,4 @@ private struct NavigationContent: View {
         .cardStyle()
     }
 }
+
