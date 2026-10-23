@@ -44,3 +44,4 @@ struct ParkingMateShortcuts: AppShortcutsProvider {
                     shortTitle: "Time left", systemImageName: "timer")
     }
 }
+
