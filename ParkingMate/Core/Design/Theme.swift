@@ -78,3 +78,4 @@ struct AppAppearanceModifier: ViewModifier {
             .tint(Theme.primary)
     }
 }
+
