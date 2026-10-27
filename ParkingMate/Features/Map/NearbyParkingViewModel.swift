@@ -54,3 +54,4 @@ final class NearbyParkingViewModel {
         return coordinate
     }
 }
+
