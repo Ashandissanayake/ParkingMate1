@@ -26,6 +26,7 @@ final class AppContainer {
     let motion: MotionActivityService
     let altitude: AltitudeService
     let voice: VoiceNoteService
+    let firebase: FirebaseService
 
     var pendingRoute: AppRoute?
     var detectionHint: DetectionHint?
@@ -54,6 +55,7 @@ final class AppContainer {
         self.motion = MotionActivityService()
         self.altitude = AltitudeService()
         self.voice = VoiceNoteService()
+        self.firebase = FirebaseService.shared
         self.lock = AppLockController(isEnabled: { [settings] in settings.biometricLockEnabled },
                                       isSignedIn: { [auth] in auth.isSignedIn })
 

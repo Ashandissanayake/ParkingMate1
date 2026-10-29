@@ -169,6 +169,41 @@ private struct SaveParkingForm: View {
                 PhotosPicker(selection: $photoItem, matching: .images) { Label("Library", systemImage: "photo") }
                     .buttonStyle(.secondary)
             }
+            HStack(spacing: 8) {
+                Text("Sample:").font(.caption).foregroundStyle(Theme.textSecondary)
+                Button("Slot A124") {
+                    vm.setPhoto(SampleParkingImages.slotA124)
+                    vm.floor = "B1"
+                    vm.section = "Blue"
+                    vm.space = "A124"
+                }
+                .font(.caption2.weight(.medium))
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Theme.card, in: Capsule())
+                .overlay(Capsule().stroke(Theme.outline, lineWidth: 1))
+
+                Button("Slot B-205") {
+                    vm.setPhoto(SampleParkingImages.slotB205)
+                    vm.floor = "B2"
+                    vm.section = "Green"
+                    vm.space = "B-205"
+                }
+                .font(.caption2.weight(.medium))
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Theme.card, in: Capsule())
+                .overlay(Capsule().stroke(Theme.outline, lineWidth: 1))
+
+                Button("Slot G-14") {
+                    vm.setPhoto(SampleParkingImages.slotG14)
+                    vm.floor = "G"
+                    vm.section = "Purple"
+                    vm.space = "G-14"
+                }
+                .font(.caption2.weight(.medium))
+                .padding(.horizontal, 8).padding(.vertical, 4)
+                .background(Theme.card, in: Capsule())
+                .overlay(Capsule().stroke(Theme.outline, lineWidth: 1))
+            }
         }
     }
 

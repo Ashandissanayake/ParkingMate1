@@ -121,6 +121,9 @@ final class ParkingStore {
         if vehicles.isEmpty { v.isDefault = true }
         guard persist({ try vehicleRepo.upsert(v) }) else { return }
         reload()
+        Task {
+            try? await FirebaseService.shared.syncVehicle(v, userId: "user")
+        }
     }
 
     func setDefaultVehicle(id: UUID) {
@@ -159,6 +162,9 @@ final class ParkingStore {
         scheduleReminders(for: session)
         if settings.geofenceAlertsEnabled {
             geofence.startMonitoring(sessionID: session.id, center: session.coordinate, radius: AppConfig.geofenceRadius)
+        }
+        Task {
+            try? await FirebaseService.shared.syncParkingSession(session, userId: "user")
         }
     }
 

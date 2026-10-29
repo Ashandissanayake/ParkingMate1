@@ -60,6 +60,9 @@ final class AuthService {
         let profile = UserProfile(fullName: fullName.trimmingCharacters(in: .whitespaces), email: key, phone: phone)
         saveProfile(profile)
         startSession(for: profile)
+        Task { [weak self] in
+            _ = try? await FirebaseService.shared.signUp(email: key, password: password, displayName: fullName)
+        }
     }
 
     func signIn(email: String, password: String) throws {
@@ -71,6 +74,9 @@ final class AuthService {
         guard Self.hash(password: password, salt: Data(salt)) == Data(stored),
               let profile = loadProfile(email: key) else { throw AuthError.invalidCredentials }
         startSession(for: profile)
+        Task {
+            _ = try? await FirebaseService.shared.signIn(email: key, password: password)
+        }
     }
 
     /// Sign in with Apple – no local password; we just keep the name/email Apple returns.
@@ -85,12 +91,16 @@ final class AuthService {
     func signOut() {
         defaults.removeObject(forKey: Self.sessionKey)
         currentUser = nil
+        FirebaseService.shared.signOut()
     }
 
-    /// Password reset is simulated (no mail server in this coursework build) but validates the account exists.
+    /// Password reset is simulated locally + requests Firebase password reset.
     func requestPasswordReset(email: String) throws {
         guard CredentialValidator.isValidEmail(email) else { throw AuthError.validation(.invalidEmail) }
         guard secrets.get(Self.normalize(email)) != nil else { throw AuthError.accountNotFound }
+        Task {
+            try? await FirebaseService.shared.sendPasswordReset(email: email)
+        }
     }
 
     func updateProfile(fullName: String, phone: String) throws {

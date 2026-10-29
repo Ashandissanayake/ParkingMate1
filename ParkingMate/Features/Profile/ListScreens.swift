@@ -128,6 +128,8 @@ struct AddVehicleSheet: View {
 struct ShareLocationView: View {
     @Environment(AppContainer.self) private var container
     @State private var copied = false
+    @State private var cloudShare: SharedParkingLocation?
+    @State private var isSharingCloud = false
 
     var body: some View {
         VStack(spacing: 20) {
@@ -137,9 +139,27 @@ struct ShareLocationView: View {
                     .accessibilityHidden(true)
                 Text("Share your parked location with family or friends.").font(.headline).multilineTextAlignment(.center)
                 VStack(alignment: .leading, spacing: 8) {
-                    Text(s.title).font(.subheadline.weight(.semibold))
+                    HStack {
+                        Text(s.title).font(.subheadline.weight(.semibold))
+                        Spacer()
+                        Label("Firebase Cloud", systemImage: "icloud.fill")
+                            .font(.caption2.weight(.medium))
+                            .foregroundStyle(Theme.primary)
+                            .padding(.horizontal, 8)
+                            .padding(.vertical, 4)
+                            .background(Theme.primary.opacity(0.12), in: Capsule())
+                    }
                     Text(s.locationLabel).foregroundStyle(Theme.textSecondary)
                     if !s.note.isEmpty { Text(s.note).font(.footnote).foregroundStyle(Theme.textSecondary) }
+                    if let cloud = cloudShare {
+                        Divider().padding(.vertical, 4)
+                        HStack {
+                            Image(systemName: "link.circle.fill").foregroundStyle(Theme.primary)
+                            Text("Cloud Share ID: \(cloud.id.uppercased())")
+                                .font(.caption.weight(.medium))
+                                .foregroundStyle(Theme.textSecondary)
+                        }
+                    }
                 }
                 .frame(maxWidth: .infinity, alignment: .leading).cardStyle()
                 Spacer()
@@ -147,8 +167,19 @@ struct ShareLocationView: View {
                           message: Text("I parked at \(s.title) – \(s.locationLabel). \(s.note)")) {
                     Label("Share Location", systemImage: "square.and.arrow.up")
                 }.buttonStyle(.primary)
-                Button { UIPasteboard.general.url = url; copied = true } label: {
-                    Label(copied ? "Link copied" : "Copy link", systemImage: copied ? "checkmark" : "link")
+                Button {
+                    Task {
+                        isSharingCloud = true
+                        let user = container.auth.currentUser?.fullName ?? "ParkingMate User"
+                        cloudShare = try? await container.firebase.createLocationShare(for: s, sharedBy: user)
+                        isSharingCloud = false
+                        UIPasteboard.general.url = cloudShare?.shareURL ?? url
+                        copied = true
+                        Haptics.success()
+                    }
+                } label: {
+                    Label(copied ? "Cloud Link Copied!" : (isSharingCloud ? "Generating..." : "Copy Cloud Share Link"),
+                          systemImage: copied ? "checkmark" : "bolt.horizontal.icloud.fill")
                 }.buttonStyle(.secondary)
             } else {
                 EmptyStateView(systemImage: "mappin.slash", title: "Nothing to share", message: "Save your parking spot first.")
@@ -160,6 +191,12 @@ struct ShareLocationView: View {
         .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Share Location")
         .navigationBarTitleDisplayMode(.inline)
+        .task {
+            if let s = container.store.activeSession, cloudShare == nil {
+                let user = container.auth.currentUser?.fullName ?? "ParkingMate User"
+                cloudShare = try? await container.firebase.createLocationShare(for: s, sharedBy: user)
+            }
+        }
     }
 }
 

@@ -7,16 +7,17 @@ struct NearbyParkingView: View {
     @Environment(AppContainer.self) private var container
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var vm: NearbyParkingViewModel?
-    @State private var position: MapCameraPosition = .userLocation(fallback: .automatic)
+    @State private var position: MapCameraPosition = .region(MKCoordinateRegion(center: AppConfig.fallbackCenter, latitudinalMeters: 5000, longitudinalMeters: 5000))
     @State private var selectedID: String?
     @State private var showList = false
     @State private var visibleCenter: CLLocationCoordinate2D?
+    @State private var navigationRoute: WalkingRoute?
 
     var body: some View {
         Group {
             if let vm { content(vm) } else { ProgressView() }
         }
-        .navigationTitle("Nearby Parking")
+        .navigationTitle("Nearby Parking (Sri Lanka)")
         .navigationBarTitleDisplayMode(.inline)
         .task {
             if vm == nil {
@@ -24,7 +25,7 @@ struct NearbyParkingView: View {
                 let start = initialCenter ?? container.location.coordinate ?? AppConfig.fallbackCenter
                 let model = NearbyParkingViewModel(provider: container.facilities, center: start)
                 vm = model
-                position = .region(MKCoordinateRegion(center: start, latitudinalMeters: 1800, longitudinalMeters: 1800))
+                position = .region(MKCoordinateRegion(center: start, latitudinalMeters: 5000, longitudinalMeters: 5000))
                 await model.load(around: start)
             }
         }
@@ -77,6 +78,15 @@ struct NearbyParkingView: View {
             .padding(12)
             .background(Theme.fieldBackground, in: RoundedRectangle(cornerRadius: Theme.radiusMedium))
             ScrollView(.horizontal, showsIndicators: false) {
+                HStack(spacing: 8) {
+                    cityButton(name: "🇱🇰 Colombo", coord: CLLocationCoordinate2D(latitude: 6.9271, longitude: 79.8612), span: 5000, vm: vm)
+                    cityButton(name: "🏔️ Kandy", coord: CLLocationCoordinate2D(latitude: 7.2906, longitude: 80.6337), span: 5000, vm: vm)
+                    cityButton(name: "🏰 Galle", coord: CLLocationCoordinate2D(latitude: 6.0535, longitude: 80.2210), span: 5000, vm: vm)
+                    cityButton(name: "✈️ Airport", coord: CLLocationCoordinate2D(latitude: 7.1808, longitude: 79.8841), span: 5000, vm: vm)
+                    cityButton(name: "🗺️ All Sri Lanka", coord: CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718), span: 350000, vm: vm)
+                }
+            }
+            ScrollView(.horizontal, showsIndicators: false) {
                 HStack {
                     ForEach(FacilityFilter.allCases) { f in
                         Chip(title: f.rawValue, systemImage: f.symbol, isSelected: vm.filter == f) { vm.filter = f }
@@ -107,8 +117,28 @@ struct NearbyParkingView: View {
                     Image(systemName: "car.fill").foregroundStyle(.white).padding(6).background(Theme.danger, in: Circle())
                 }
             }
+            if let route = navigationRoute {
+                MapPolyline(route.polyline)
+                    .stroke(Theme.primary, lineWidth: 6)
+            }
         }
         .mapControls { MapUserLocationButton(); MapCompass(); MapScaleView() }
+        .onChange(of: selectedID) { _, newID in
+            guard let newID, let facility = vm.filtered.first(where: { $0.id == newID }) else {
+                navigationRoute = nil
+                return
+            }
+            let origin = container.location.coordinate ?? AppConfig.fallbackCenter
+            Task {
+                let route = try? await container.routes.walkingRoute(from: origin, to: facility.coordinate)
+                navigationRoute = route
+                if let rect = route?.polyline.boundingMapRect {
+                    withAnimation {
+                        position = .rect(rect.insetBy(dx: -rect.width * 0.35, dy: -rect.height * 0.35))
+                    }
+                }
+            }
+        }
         .onMapCameraChange(frequency: .onEnd) { context in visibleCenter = context.region.center }
         .overlay(alignment: .top) {
             if let visibleCenter, vm.facilities.isEmpty == false || vm.errorMessage != nil {
@@ -148,7 +178,22 @@ struct NearbyParkingView: View {
     }
 
     private func move(to coordinate: CLLocationCoordinate2D) {
-        position = .region(MKCoordinateRegion(center: coordinate, latitudinalMeters: 1800, longitudinalMeters: 1800))
+        position = .region(MKCoordinateRegion(center: coordinate, latitudinalMeters: 5000, longitudinalMeters: 5000))
+    }
+
+    private func cityButton(name: String, coord: CLLocationCoordinate2D, span: CLLocationDistance, vm: NearbyParkingViewModel) -> some View {
+        Button {
+            position = .region(MKCoordinateRegion(center: coord, latitudinalMeters: span, longitudinalMeters: span))
+            Task { await vm.load(around: coord) }
+        } label: {
+            Text(name)
+                .font(.caption.weight(.medium))
+                .padding(.horizontal, 10)
+                .padding(.vertical, 6)
+                .background(Theme.card, in: Capsule())
+                .foregroundStyle(Theme.textPrimary)
+                .overlay(Capsule().stroke(Theme.outline, lineWidth: 1))
+        }
     }
 }
 
@@ -196,17 +241,32 @@ struct FacilityCard: View {
 struct FacilityDetailView: View {
     let facility: ParkingFacility
     @Environment(AppContainer.self) private var container
+    @State private var route: WalkingRoute?
+    @State private var position: MapCameraPosition = .automatic
 
     var body: some View {
         ScrollView {
             VStack(spacing: 16) {
-                Map(initialPosition: .region(MKCoordinateRegion(center: facility.coordinate, latitudinalMeters: 400, longitudinalMeters: 400)),
-                    interactionModes: []) {
+                Map(position: $position) {
+                    UserAnnotation()
                     Marker(facility.name, systemImage: "p.circle.fill", coordinate: facility.coordinate)
+                    if let route {
+                        MapPolyline(route.polyline)
+                            .stroke(Theme.primary, lineWidth: 5)
+                    }
                 }
-                .frame(height: 200)
+                .frame(height: 240)
                 .clipShape(RoundedRectangle(cornerRadius: Theme.radiusLarge, style: .continuous))
                 .accessibilityLabel("Map showing \(facility.name)")
+                .task {
+                    let origin = container.location.coordinate ?? AppConfig.fallbackCenter
+                    route = try? await container.routes.walkingRoute(from: origin, to: facility.coordinate)
+                    if let rect = route?.polyline.boundingMapRect {
+                        position = .rect(rect.insetBy(dx: -rect.width * 0.3, dy: -rect.height * 0.3))
+                    } else {
+                        position = .region(MKCoordinateRegion(center: facility.coordinate, latitudinalMeters: 600, longitudinalMeters: 600))
+                    }
+                }
 
                 VStack(alignment: .leading, spacing: 12) {
                     Text(facility.name).font(.title2.weight(.bold)).foregroundStyle(Theme.textPrimary)

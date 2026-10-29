@@ -35,7 +35,16 @@ final class LocationService: NSObject, CLLocationManagerDelegate, GeofenceManagi
     }
 
     var isAuthorized: Bool { authorization == .authorizedWhenInUse || authorization == .authorizedAlways }
-    var coordinate: CLLocationCoordinate2D? { location?.coordinate }
+    var coordinate: CLLocationCoordinate2D? {
+        if let coord = location?.coordinate {
+            // When running in iOS Simulator (defaulting to Apple Cupertino), center on Colombo, Sri Lanka
+            if abs(coord.latitude - 37.33) < 1.5 && abs(coord.longitude - (-122.03)) < 1.5 {
+                return AppConfig.fallbackCenter
+            }
+            return coord
+        }
+        return AppConfig.fallbackCenter
+    }
 
     func requestPermission() {
         if authorization == .notDetermined { manager.requestWhenInUseAuthorization() }

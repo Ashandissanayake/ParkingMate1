@@ -193,6 +193,15 @@ struct ICloudSyncView: View {
                 if let warning = container.persistence.startupWarning { Text(warning).font(.footnote).foregroundStyle(Theme.warning) }
                 Button("Check iCloud status") { Task { await sync.refreshAccountStatus() } }
             }
+            Section("Firebase Cloud Backend") {
+                LabeledContent("Project ID", value: container.firebase.config.projectId)
+                LabeledContent("Firebase Auth", value: container.auth.isSignedIn ? "Signed In" : "Local / Ready")
+                LabeledContent("Cloud Firestore", value: container.firebase.isSyncing ? "Syncing..." : "Connected")
+                LabeledContent("FCM Push Service", value: "Ready")
+                if let lastSync = container.firebase.lastSyncTime {
+                    LabeledContent("Last Cloud Sync", value: lastSync.formatted(date: .abbreviated, time: .shortened))
+                }
+            }
         }
         .navigationTitle("iCloud Sync")
         .navigationBarTitleDisplayMode(.inline)

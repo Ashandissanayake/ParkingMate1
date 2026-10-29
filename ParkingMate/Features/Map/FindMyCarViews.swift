@@ -65,6 +65,8 @@ private struct FindMyCarContent: View {
 
     private func trackUser() async {
         container.location.start()
+        let initial = container.location.coordinate ?? AppConfig.fallbackCenter
+        await vm.loadRoute(from: initial)
         while !Task.isCancelled {
             if let origin = container.location.coordinate, vm.shouldReroute(from: origin) {
                 await vm.loadRoute(from: origin)
@@ -259,6 +261,8 @@ private struct NavigationContent: View {
 
     private func follow() async {
         container.location.start()
+        let initial = container.location.coordinate ?? AppConfig.fallbackCenter
+        await vm.loadRoute(from: initial)
         while !Task.isCancelled {
             if let origin = container.location.coordinate, vm.shouldReroute(from: origin) { await vm.loadRoute(from: origin) }
             if let origin = container.location.coordinate, let step = vm.currentStep(from: origin),
