@@ -166,3 +166,4 @@ final class ParkingStore {
         catch { lastError = "Couldn't save: \(error.localizedDescription)"; return false }
     }
 }
+
