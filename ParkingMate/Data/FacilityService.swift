@@ -101,6 +101,7 @@ enum FacilityError: LocalizedError {
     }
 }
 
+/// Service protocol supplying nearby parking facilities and comprehensive Sri Lanka parking data.
 protocol FacilityProviding {
     func nearby(to coordinate: CLLocationCoordinate2D, radius: Int) async throws -> FacilityResult
 }
