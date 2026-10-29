@@ -257,9 +257,20 @@ private struct SaveParkingForm: View {
 
     private func autoDetectFloor(_ vm: SaveParkingViewModel) {
         if let floor = container.altitude.estimatedFloor {
-            vm.floor = floor; Haptics.success()
+            vm.floor = floor
+            vm.errorMessage = nil
+            Haptics.success()
         } else {
+            #if targetEnvironment(simulator)
+            let simulatedFloors = ["B1", "B2", "L1", "L2", "G"]
+            let current = vm.floor
+            let next = simulatedFloors.first { $0 != current } ?? "B1"
+            vm.floor = next
+            vm.errorMessage = nil
+            Haptics.success()
+            #else
             vm.errorMessage = "Barometer data isn't available on this device – choose the floor manually."
+            #endif
         }
     }
 
@@ -273,6 +284,9 @@ private struct SaveParkingForm: View {
             if container.store.startSession(session) {
                 Haptics.success()
                 container.location.requestAlwaysPermission()
+                if container.settings.voiceAnnouncementsEnabled {
+                    container.voiceAnnouncement.announceParkingSaved(session: session)
+                }
                 saved = session
             } else {
                 vm.errorMessage = container.store.lastError

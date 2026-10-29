@@ -17,16 +17,23 @@ struct NearbyParkingView: View {
         Group {
             if let vm { content(vm) } else { ProgressView() }
         }
-        .navigationTitle("Nearby Parking (Sri Lanka)")
+        .navigationTitle("Sri Lanka Parking Map")
         .navigationBarTitleDisplayMode(.inline)
         .task {
             if vm == nil {
                 container.location.start()
-                let start = initialCenter ?? container.location.coordinate ?? AppConfig.fallbackCenter
-                let model = NearbyParkingViewModel(provider: container.facilities, center: start)
-                vm = model
-                position = .region(MKCoordinateRegion(center: start, latitudinalMeters: 5000, longitudinalMeters: 5000))
-                await model.load(around: start)
+                if let initial = initialCenter {
+                    let model = NearbyParkingViewModel(provider: container.facilities, center: initial)
+                    vm = model
+                    position = .region(MKCoordinateRegion(center: initial, latitudinalMeters: 8000, longitudinalMeters: 8000))
+                    await model.load(around: initial, radius: 10000)
+                } else {
+                    let islandCenter = CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718)
+                    let model = NearbyParkingViewModel(provider: container.facilities, center: islandCenter)
+                    vm = model
+                    position = .region(MKCoordinateRegion(center: islandCenter, latitudinalMeters: 380000, longitudinalMeters: 380000))
+                    await model.load(around: islandCenter, radius: 400000)
+                }
             }
         }
     }
@@ -79,11 +86,16 @@ struct NearbyParkingView: View {
             .background(Theme.fieldBackground, in: RoundedRectangle(cornerRadius: Theme.radiusMedium))
             ScrollView(.horizontal, showsIndicators: false) {
                 HStack(spacing: 8) {
-                    cityButton(name: "🇱🇰 Colombo", coord: CLLocationCoordinate2D(latitude: 6.9271, longitude: 79.8612), span: 5000, vm: vm)
-                    cityButton(name: "🏔️ Kandy", coord: CLLocationCoordinate2D(latitude: 7.2906, longitude: 80.6337), span: 5000, vm: vm)
-                    cityButton(name: "🏰 Galle", coord: CLLocationCoordinate2D(latitude: 6.0535, longitude: 80.2210), span: 5000, vm: vm)
-                    cityButton(name: "✈️ Airport", coord: CLLocationCoordinate2D(latitude: 7.1808, longitude: 79.8841), span: 5000, vm: vm)
-                    cityButton(name: "🗺️ All Sri Lanka", coord: CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718), span: 350000, vm: vm)
+                    cityButton(name: "🗺️ All Sri Lanka", coord: CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718), span: 400000, vm: vm)
+                    cityButton(name: "🇱🇰 Colombo", coord: CLLocationCoordinate2D(latitude: 6.9271, longitude: 79.8612), span: 12000, vm: vm)
+                    cityButton(name: "🏔️ Kandy", coord: CLLocationCoordinate2D(latitude: 7.2906, longitude: 80.6337), span: 12000, vm: vm)
+                    cityButton(name: "🏰 Galle", coord: CLLocationCoordinate2D(latitude: 6.0535, longitude: 80.2210), span: 15000, vm: vm)
+                    cityButton(name: "✈️ Airport", coord: CLLocationCoordinate2D(latitude: 7.1808, longitude: 79.8841), span: 15000, vm: vm)
+                    cityButton(name: "🏛️ Anuradhapura", coord: CLLocationCoordinate2D(latitude: 8.3500, longitude: 80.3960), span: 20000, vm: vm)
+                    cityButton(name: "🪨 Sigiriya", coord: CLLocationCoordinate2D(latitude: 7.9570, longitude: 80.7600), span: 20000, vm: vm)
+                    cityButton(name: "☕ Nuwara Eliya", coord: CLLocationCoordinate2D(latitude: 6.9535, longitude: 80.7815), span: 25000, vm: vm)
+                    cityButton(name: "🌴 Jaffna", coord: CLLocationCoordinate2D(latitude: 9.6615, longitude: 80.0080), span: 20000, vm: vm)
+                    cityButton(name: "🌊 Trincomalee", coord: CLLocationCoordinate2D(latitude: 8.5875, longitude: 81.2405), span: 20000, vm: vm)
                 }
             }
             ScrollView(.horizontal, showsIndicators: false) {
@@ -183,8 +195,10 @@ struct NearbyParkingView: View {
 
     private func cityButton(name: String, coord: CLLocationCoordinate2D, span: CLLocationDistance, vm: NearbyParkingViewModel) -> some View {
         Button {
-            position = .region(MKCoordinateRegion(center: coord, latitudinalMeters: span, longitudinalMeters: span))
-            Task { await vm.load(around: coord) }
+            withAnimation(.easeInOut(duration: 0.4)) {
+                position = .region(MKCoordinateRegion(center: coord, latitudinalMeters: span, longitudinalMeters: span))
+            }
+            Task { await vm.load(around: coord, radius: Int(span)) }
         } label: {
             Text(name)
                 .font(.caption.weight(.medium))

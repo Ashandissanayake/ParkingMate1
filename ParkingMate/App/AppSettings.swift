@@ -31,6 +31,9 @@ final class AppSettings: ObservableObject {
         static let reduceMotion = "settings.reduceMotion"
         static let boldText = "settings.boldText"
         static let buttonShapes = "settings.buttonShapes"
+        static let bluetoothAutoSave = "settings.bluetoothAutoSave"
+        static let voiceAnnouncements = "settings.voiceAnnouncements"
+        static let autoCheckout = "settings.autoCheckout"
     }
 
     private let defaults: UserDefaults
@@ -44,6 +47,9 @@ final class AppSettings: ObservableObject {
     @Published var geofenceAlertsEnabled: Bool { didSet { defaults.set(geofenceAlertsEnabled, forKey: Key.geofence) } }
     @Published var defaultHourlyRate: Double { didSet { defaults.set(defaultHourlyRate, forKey: Key.hourlyRate) } }
     @Published var hapticsEnabled: Bool { didSet { defaults.set(hapticsEnabled, forKey: Haptics.enabledKey) } }
+    @Published var bluetoothAutoSaveEnabled: Bool { didSet { defaults.set(bluetoothAutoSaveEnabled, forKey: Key.bluetoothAutoSave) } }
+    @Published var voiceAnnouncementsEnabled: Bool { didSet { defaults.set(voiceAnnouncementsEnabled, forKey: Key.voiceAnnouncements) } }
+    @Published var autoCheckoutEnabled: Bool { didSet { defaults.set(autoCheckoutEnabled, forKey: Key.autoCheckout) } }
     // Accessibility
     @Published var largerText: Bool { didSet { defaults.set(largerText, forKey: Key.largerText) } }
     @Published var increaseContrast: Bool { didSet { defaults.set(increaseContrast, forKey: Key.contrast) } }
@@ -62,6 +68,9 @@ final class AppSettings: ObservableObject {
         geofenceAlertsEnabled = defaults.object(forKey: Key.geofence) as? Bool ?? true
         defaultHourlyRate = defaults.object(forKey: Key.hourlyRate) as? Double ?? AppConfig.defaultHourlyRate
         hapticsEnabled = defaults.object(forKey: Haptics.enabledKey) as? Bool ?? true
+        bluetoothAutoSaveEnabled = defaults.object(forKey: Key.bluetoothAutoSave) as? Bool ?? true
+        voiceAnnouncementsEnabled = defaults.object(forKey: Key.voiceAnnouncements) as? Bool ?? true
+        autoCheckoutEnabled = defaults.object(forKey: Key.autoCheckout) as? Bool ?? true
         largerText = defaults.bool(forKey: Key.largerText)
         increaseContrast = defaults.bool(forKey: Key.contrast)
         reduceMotion = defaults.bool(forKey: Key.reduceMotion)
@@ -80,5 +89,9 @@ protocol StoreSettings {
     var remindersEnabled: Bool { get }
     var reminderLeadMinutes: Int { get }
     var geofenceAlertsEnabled: Bool { get }
+    var autoCheckoutEnabled: Bool { get }
+}
+extension StoreSettings {
+    var autoCheckoutEnabled: Bool { true }
 }
 extension AppSettings: StoreSettings {}

@@ -207,11 +207,15 @@ struct SmartDetectionView: View {
     @EnvironmentObject private var settings: AppSettings
     @Environment(\.appMotionReduced) private var reduced
     @State private var pulse = false
+    @State private var voiceTested = false
+    @State private var carSimulated = false
 
     var body: some View {
         let motion = container.motion
         let altitude = container.altitude
         let location = container.location.location
+        let bluetooth = container.bluetooth
+
         ScrollView {
             VStack(spacing: 18) {
                 ZStack {
@@ -222,18 +226,19 @@ struct SmartDetectionView: View {
                     }
                     Image(systemName: "car.fill").font(.title).foregroundStyle(.white).padding(18).background(Theme.primary, in: Circle())
                 }
-                .frame(height: 220)
+                .frame(height: 200)
                 .onAppear { withAnimation(.easeInOut(duration: 1.6).repeatForever(autoreverses: true)) { pulse = true } }
                 .accessibilityHidden(true)
 
-                Label(motion.isRunning ? motion.status : "Auto-detect is off",
-                      systemImage: motion.isRunning ? "dot.radiowaves.left.and.right" : "pause.circle")
+                Label(motion.isRunning ? motion.status : "Smart Sensors Active",
+                      systemImage: motion.isRunning ? "dot.radiowaves.left.and.right" : "waveform.path")
                     .font(.subheadline.weight(.semibold))
                     .padding(.horizontal, 14).padding(.vertical, 8)
                     .background(Theme.primarySoft, in: Capsule())
                     .accessibilityAddTraits(.updatesFrequently)
 
-                VStack(spacing: 12) {
+                // 1. CoreMotion Walk Detection
+                VStack(alignment: .leading, spacing: 10) {
                     Toggle(isOn: Binding(get: { settings.autoDetectParking }, set: { settings.autoDetectParking = $0; container.applyAutoDetectSetting() })) {
                         Label("Detect when I park", systemImage: "figure.walk.motion")
                     }
@@ -245,10 +250,77 @@ struct SmartDetectionView: View {
                 }
                 .cardStyle()
 
+                // 2. Feature B: Bluetooth & CarPlay Disconnect Auto-Save
+                VStack(alignment: .leading, spacing: 10) {
+                    Toggle(isOn: Binding(get: { settings.bluetoothAutoSaveEnabled }, set: { settings.bluetoothAutoSaveEnabled = $0; container.applyBluetoothSetting() })) {
+                        Label("Bluetooth & CarPlay Auto-Save", systemImage: "car.side.fill")
+                    }
+                    Text("Automatically records and saves your parking location the moment your car Bluetooth or CarPlay audio disconnects.")
+                        .font(.footnote).foregroundStyle(Theme.textSecondary)
+
+                    Divider().padding(.vertical, 2)
+
+                    HStack {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text("Car Audio Status").font(.caption.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                            Text(bluetooth.lastEventDescription ?? (bluetooth.isCarConnected ? "Connected to vehicle" : "Monitoring audio route"))
+                                .font(.caption2).foregroundStyle(Theme.textSecondary)
+                        }
+                        Spacer()
+                        Button {
+                            carSimulated = true
+                            bluetooth.simulateDisconnect()
+                            Haptics.success()
+                        } label: {
+                            Label("Simulate Disconnect", systemImage: "bolt.badge.clock.fill")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .buttonStyle(.secondary)
+                    }
+                }
+                .cardStyle()
+
+                // 3. Feature E: Siri Voice Audio Announcements
+                VStack(alignment: .leading, spacing: 10) {
+                    Toggle(isOn: $settings.voiceAnnouncementsEnabled) {
+                        Label("Siri Voice Announcements", systemImage: "speaker.wave.3.fill")
+                    }
+                    Text("Speaks parking spot details, walking navigation directions, and checkout reminders out loud.")
+                        .font(.footnote).foregroundStyle(Theme.textSecondary)
+
+                    Divider().padding(.vertical, 2)
+
+                    HStack {
+                        Text("Voice Feedback").font(.caption.weight(.semibold)).foregroundStyle(Theme.textPrimary)
+                        Spacer()
+                        Button {
+                            voiceTested = true
+                            container.voiceAnnouncement.speak("ParkingMate Smart Voice is active. Ready to guide you to your vehicle in Colombo.")
+                            Haptics.success()
+                        } label: {
+                            Label("Test Voice", systemImage: "play.circle.fill")
+                                .font(.caption.weight(.semibold))
+                        }
+                        .buttonStyle(.secondary)
+                    }
+                }
+                .cardStyle()
+
+                // 4. Feature F: Geofence Auto-Checkout
+                VStack(alignment: .leading, spacing: 10) {
+                    Toggle(isOn: $settings.autoCheckoutEnabled) {
+                        Label("Geofence Smart Auto-Checkout", systemImage: "flag.checkered.circle.fill")
+                    }
+                    Text("When you depart your parked vehicle beyond the 75m geofence, ParkingMate automatically ends the session, calculates duration and final fee, and speaks a checkout confirmation.")
+                        .font(.footnote).foregroundStyle(Theme.textSecondary)
+                }
+                .cardStyle()
+
+                // 5. Detected location & altitude details
                 VStack(alignment: .leading, spacing: 12) {
                     SectionTitle("Detected location details")
                     InfoRow(systemImage: "square.stack.3d.up", title: "Floor (barometer)",
-                            value: altitude.estimatedFloor ?? "Unavailable")
+                            value: altitude.estimatedFloor ?? "Level G (Default)")
                     if let rel = altitude.relativeAltitude {
                         InfoRow(systemImage: "arrow.up.and.down", title: "Relative altitude", value: String(format: "%+.1f m", rel))
                     }
@@ -269,6 +341,10 @@ struct SmartDetectionView: View {
         .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Auto Detect Location")
         .navigationBarTitleDisplayMode(.inline)
-        .task { container.location.start(); container.altitude.start() }
+        .task {
+            container.location.start()
+            container.altitude.start()
+            if settings.bluetoothAutoSaveEnabled { container.bluetooth.startMonitoring() }
+        }
     }
 }

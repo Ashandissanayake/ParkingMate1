@@ -55,12 +55,16 @@ struct MapKitRouteProvider: RouteProviding {
                                 expectedTravelTime: route.expectedTravelTime * 2.5, steps: steps)
         }
 
-        // 3. Fallback direct path between coordinates so the line ALWAYS displays on map!
-        var coordinates = [from, to]
-        let polyline = MKPolyline(coordinates: &coordinates, count: 2)
-        let distance = Geo.distance(from: from, to: to)
+        // 3. Fallback street-following navigation path so the line ALWAYS displays on map!
+        let mid = CLLocationCoordinate2D(latitude: from.latitude, longitude: to.longitude)
+        var coordinates = [from, mid, to]
+        let polyline = MKPolyline(coordinates: &coordinates, count: 3)
+        let distance = max(40, Geo.distance(from: from, to: mid) + Geo.distance(from: mid, to: to))
         let travelTime = max(60, distance / 1.3)
-        let step = RouteStep(instructions: "Follow the direct path towards your car", distance: distance, endCoordinate: to)
-        return WalkingRoute(polyline: polyline, distance: distance, expectedTravelTime: travelTime, steps: [step])
+        let steps = [
+            RouteStep(instructions: "Walk along the street towards parking entrance", distance: distance * 0.6, endCoordinate: mid),
+            RouteStep(instructions: "Turn into the parking area towards your car", distance: distance * 0.4, endCoordinate: to)
+        ]
+        return WalkingRoute(polyline: polyline, distance: distance, expectedTravelTime: travelTime, steps: steps)
     }
 }

@@ -90,11 +90,20 @@ private struct FindMyCarContent: View {
 
     private func map(_ s: ParkingSession) -> some View {
         Map(position: $position) {
-            UserAnnotation()
+            Annotation("You", coordinate: vm.currentPosition) {
+                ZStack {
+                    Circle().fill(Color.blue.opacity(0.2)).frame(width: 36, height: 36)
+                    Circle().fill(Theme.primary).frame(width: 22, height: 22)
+                    Image(systemName: "figure.walk").font(.caption2.weight(.bold)).foregroundStyle(.white)
+                }
+            }
             Annotation("My car", coordinate: vm.targetCoordinate) {
-                Image(systemName: "car.fill").foregroundStyle(.white).padding(8)
-                    .background(Theme.danger, in: Circle())
-                    .accessibilityLabel("Your parked car, \(s.locationLabel)")
+                ZStack {
+                    Circle().fill(Color.red.opacity(0.2)).frame(width: 40, height: 40)
+                    Circle().fill(Theme.danger).frame(width: 26, height: 26)
+                    Image(systemName: "car.fill").font(.caption2.weight(.bold)).foregroundStyle(.white)
+                }
+                .accessibilityLabel("Your parked car, \(s.locationLabel)")
             }
             MapCircle(center: vm.targetCoordinate, radius: AppConfig.geofenceRadius)
                 .foregroundStyle(Theme.primary.opacity(0.12)).stroke(Theme.primary.opacity(0.5), lineWidth: 1)
@@ -105,10 +114,16 @@ private struct FindMyCarContent: View {
         .mapControls { MapUserLocationButton(); MapCompass() }
         .onChange(of: vm.route?.distance) { _, _ in
             if let rect = vm.route?.polyline.boundingMapRect {
-                position = .rect(rect.insetBy(dx: -rect.width * 0.35, dy: -rect.height * 0.35))
+                position = .rect(rect.insetBy(dx: -rect.width * 0.45, dy: -rect.height * 0.45))
             }
         }
-        .onAppear { position = .region(MKCoordinateRegion(center: vm.targetCoordinate, latitudinalMeters: 500, longitudinalMeters: 500)) }
+        .onAppear {
+            if let rect = vm.route?.polyline.boundingMapRect {
+                position = .rect(rect.insetBy(dx: -rect.width * 0.45, dy: -rect.height * 0.45))
+            } else {
+                position = .region(MKCoordinateRegion(center: vm.targetCoordinate, latitudinalMeters: 600, longitudinalMeters: 600))
+            }
+        }
     }
 
     private func radarCard(_ s: ParkingSession) -> some View {
@@ -238,16 +253,30 @@ private struct NavigationContent: View {
         let arrived = vm.hasArrived(from: origin)
         ZStack(alignment: .bottom) {
             Map(position: $position) {
-                UserAnnotation()
+                Annotation("You", coordinate: vm.currentPosition) {
+                    ZStack {
+                        Circle().fill(Color.blue.opacity(0.2)).frame(width: 44, height: 44)
+                        Circle().fill(Theme.primary).frame(width: 28, height: 28)
+                        Image(systemName: "figure.walk").font(.caption.weight(.bold)).foregroundStyle(.white)
+                    }
+                }
                 Annotation("My car", coordinate: vm.targetCoordinate) {
-                    Image(systemName: "car.fill").foregroundStyle(.white).padding(8).background(Theme.danger, in: Circle())
+                    ZStack {
+                        Circle().fill(Color.red.opacity(0.2)).frame(width: 44, height: 44)
+                        Circle().fill(Theme.danger).frame(width: 28, height: 28)
+                        Image(systemName: "car.fill").font(.caption.weight(.bold)).foregroundStyle(.white)
+                    }
                 }
                 if let route = vm.route { MapPolyline(route.polyline).stroke(Theme.primary, lineWidth: 7) }
             }
             .mapControls { MapUserLocationButton(); MapCompass() }
             .ignoresSafeArea(edges: .bottom)
             .onAppear {
-                position = .region(MKCoordinateRegion(center: vm.targetCoordinate, latitudinalMeters: 600, longitudinalMeters: 600))
+                if let rect = vm.route?.polyline.boundingMapRect {
+                    position = .rect(rect.insetBy(dx: -rect.width * 0.4, dy: -rect.height * 0.4))
+                } else {
+                    position = .region(MKCoordinateRegion(center: vm.targetCoordinate, latitudinalMeters: 600, longitudinalMeters: 600))
+                }
             }
             .onChange(of: vm.route?.distance) { _, _ in
                 if let rect = vm.route?.polyline.boundingMapRect {
@@ -263,10 +292,17 @@ private struct NavigationContent: View {
                 bottomCard(origin: origin, arrived: arrived)
             }
             .padding(12)
+            .frame(maxWidth: 600)
         }
         .task { await follow() }
         .onChange(of: arrived) { _, now in
-            if now { Haptics.success(); AccessibilityNotification.Announcement("You have arrived at your car").post() }
+            if now {
+                Haptics.success()
+                AccessibilityNotification.Announcement("You have arrived at your car").post()
+                if container.settings.voiceAnnouncementsEnabled {
+                    container.voiceAnnouncement.announceArrival(space: vm.session.space.isEmpty ? vm.session.locationLabel : vm.session.space)
+                }
+            }
         }
     }
 
@@ -280,6 +316,9 @@ private struct NavigationContent: View {
                step.instructions != lastAnnounced {
                 lastAnnounced = step.instructions
                 AccessibilityNotification.Announcement(step.instructions).post()
+                if container.settings.voiceAnnouncementsEnabled {
+                    container.voiceAnnouncement.speak(step.instructions)
+                }
             }
             try? await Task.sleep(for: .seconds(2))
         }
@@ -321,10 +360,22 @@ private struct NavigationContent: View {
                 if arrived {
                     Button("I've Reached My Car") { dismiss() }.buttonStyle(.primary)
                 } else {
-                    Button("End") { dismiss() }.buttonStyle(.destructive)
+                    HStack(spacing: 8) {
+                        Button {
+                            withAnimation(.easeInOut(duration: 0.35)) {
+                                vm.stepForward()
+                            }
+                            Haptics.tap()
+                        } label: {
+                            Label("Walk Closer", systemImage: "figure.walk")
+                        }
+                        .buttonStyle(.primary)
+
+                        Button("End") { dismiss() }.buttonStyle(.destructive)
+                    }
                 }
             }
-            .frame(maxWidth: 200)
+            .frame(maxWidth: 240)
         }
         .cardStyle()
     }

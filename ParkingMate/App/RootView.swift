@@ -67,6 +67,7 @@ struct MainView: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     @State private var tab: MainTab = .home
     @State private var homePath = NavigationPath()
+    @State private var columnVisibility: NavigationSplitViewVisibility = .all
 
     var body: some View {
         Group {
@@ -92,14 +93,16 @@ struct MainView: View {
     }
 
     private var splitLayout: some View {
-        NavigationSplitView {
+        NavigationSplitView(columnVisibility: $columnVisibility) {
             List(MainTab.allCases, selection: Binding<MainTab?>(get: { tab }, set: { if let v = $0 { tab = v } })) { item in
                 Label(item.title, systemImage: item.symbol).tag(item)
             }
+            .listStyle(.sidebar)
             .navigationTitle("ParkingMate")
         } detail: {
             root(for: tab)
         }
+        .navigationSplitViewStyle(.balanced)
     }
 
     @ViewBuilder

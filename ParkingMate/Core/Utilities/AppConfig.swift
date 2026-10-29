@@ -2,6 +2,8 @@ import Foundation
 import CoreLocation
 import Observation
 import UIKit
+import AVFoundation
+import Combine
 
 /// Central place for constants so nothing is "magic" elsewhere in the app.
 enum AppConfig {
@@ -428,5 +430,113 @@ enum SampleParkingImages {
 
     static var slotG14: UIImage {
         generate(title: "Galle Face Green • Surface Bay", bay: "G-14", floor: "G", color: UIColor(red: 0.55, green: 0.25, blue: 0.75, alpha: 1.0))
+    }
+}
+
+// MARK: - Voice Audio Announcements (Feature E: AVSpeechSynthesizer)
+
+@MainActor
+final class VoiceAnnouncementService: NSObject, AVSpeechSynthesizerDelegate {
+    static let shared = VoiceAnnouncementService()
+    private let synthesizer = AVSpeechSynthesizer()
+
+    override init() {
+        super.init()
+        synthesizer.delegate = self
+    }
+
+    func speak(_ text: String) {
+        try? AVAudioSession.sharedInstance().setCategory(.playback, mode: .spokenAudio, options: [.duckOthers])
+        try? AVAudioSession.sharedInstance().setActive(true)
+
+        let utterance = AVSpeechUtterance(string: text)
+        utterance.rate = AVSpeechUtteranceDefaultSpeechRate * 0.95
+        utterance.pitchMultiplier = 1.0
+        utterance.voice = AVSpeechSynthesisVoice(language: "en-US")
+        synthesizer.stopSpeaking(at: .immediate)
+        synthesizer.speak(utterance)
+    }
+
+    func announceParkingSaved(session: ParkingSession) {
+        let spot = session.space.isEmpty ? session.locationLabel : "space \(session.space)"
+        speak("Parking spot saved at \(session.title). Your vehicle is parked at \(spot).")
+    }
+
+    func announceExpiryWarning(title: String, minutes: Int) {
+        speak("Attention: Your parking meter at \(title) will expire in \(minutes) minutes.")
+    }
+
+    func announceArrival(space: String) {
+        speak("You have reached your car. \(space).")
+    }
+
+    func announceCheckout(title: String, cost: Double, duration: String) {
+        let costFormatted = String(format: "%.0f", cost)
+        speak("Smart checkout complete. You have departed \(title). Total duration \(duration). Final fee \(costFormatted) Rupees.")
+    }
+}
+
+// MARK: - Bluetooth & CarPlay Auto-Save Service (Feature B)
+
+@MainActor
+@Observable
+final class BluetoothParkingService: NSObject {
+    static let shared = BluetoothParkingService()
+    var isCarConnected: Bool = false
+    var lastEventDescription: String?
+    var isMonitoring: Bool = false
+    @ObservationIgnored var onCarDisconnected: (() -> Void)?
+
+    override init() {
+        super.init()
+        startMonitoring()
+    }
+
+    func startMonitoring() {
+        guard !isMonitoring else { return }
+        isMonitoring = true
+        NotificationCenter.default.addObserver(
+            self,
+            selector: #selector(handleAudioRouteChange),
+            name: AVAudioSession.routeChangeNotification,
+            object: nil
+        )
+    }
+
+    func stopMonitoring() {
+        guard isMonitoring else { return }
+        isMonitoring = false
+        NotificationCenter.default.removeObserver(self, name: AVAudioSession.routeChangeNotification, object: nil)
+    }
+
+    @objc private func handleAudioRouteChange(notification: Notification) {
+        guard let userInfo = notification.userInfo,
+              let reasonValue = userInfo[AVAudioSessionRouteChangeReasonKey] as? UInt,
+              let reason = AVAudioSession.RouteChangeReason(rawValue: reasonValue) else { return }
+
+        switch reason {
+        case .oldDeviceUnavailable:
+            if let previousRoute = userInfo[AVAudioSessionRouteChangePreviousRouteKey] as? AVAudioSessionRouteDescription {
+                let hadCarOrBluetooth = previousRoute.outputs.contains { desc in
+                    desc.portType == .bluetoothA2DP || desc.portType == .bluetoothHFP || desc.portType == .carAudio || desc.portType == .usbAudio
+                }
+                if hadCarOrBluetooth {
+                    isCarConnected = false
+                    lastEventDescription = "Car audio disconnected at \(Date().formatted(date: .omitted, time: .shortened))"
+                    onCarDisconnected?()
+                }
+            }
+        case .newDeviceAvailable:
+            isCarConnected = true
+            lastEventDescription = "Car audio connected"
+        default:
+            break
+        }
+    }
+
+    func simulateDisconnect() {
+        isCarConnected = false
+        lastEventDescription = "Simulated car disconnect at \(Date().formatted(date: .omitted, time: .shortened))"
+        onCarDisconnected?()
     }
 }

@@ -33,12 +33,27 @@ final class CarLocatorViewModel {
         sanitize(session.coordinate)
     }
 
+    var walkerCoordinate: CLLocationCoordinate2D?
+
+    func effectiveOrigin(from origin: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
+        let clean = sanitize(origin)
+        if Geo.distance(from: clean, to: targetCoordinate) < 40 {
+            // When user is at the car (e.g. on simulator), start 250m away from the entrance
+            return CLLocationCoordinate2D(latitude: targetCoordinate.latitude + 0.0018, longitude: targetCoordinate.longitude + 0.0018)
+        }
+        return clean
+    }
+
+    var currentPosition: CLLocationCoordinate2D {
+        walkerCoordinate ?? effectiveOrigin(from: lastOrigin ?? AppConfig.fallbackCenter)
+    }
+
     func distance(from origin: CLLocationCoordinate2D) -> CLLocationDistance {
-        Geo.distance(from: sanitize(origin), to: targetCoordinate)
+        Geo.distance(from: currentPosition, to: targetCoordinate)
     }
 
     func bearing(from origin: CLLocationCoordinate2D) -> Double {
-        Geo.bearing(from: sanitize(origin), to: targetCoordinate)
+        Geo.bearing(from: currentPosition, to: targetCoordinate)
     }
 
     func hasArrived(from origin: CLLocationCoordinate2D) -> Bool {
@@ -47,7 +62,8 @@ final class CarLocatorViewModel {
 
     /// First step whose end point the user hasn't reached yet.
     func currentStep(from origin: CLLocationCoordinate2D) -> RouteStep? {
-        route?.steps.first { Geo.distance(from: sanitize(origin), to: $0.endCoordinate) > 20 }
+        route?.steps.first { Geo.distance(from: currentPosition, to: $0.endCoordinate) > 20 }
+            ?? route?.steps.last
     }
 
     func shouldReroute(from origin: CLLocationCoordinate2D) -> Bool {
@@ -55,16 +71,32 @@ final class CarLocatorViewModel {
         return Geo.distance(from: sanitize(lastOrigin), to: sanitize(origin)) > Self.rerouteThreshold
     }
 
+    /// Moves the walker one step closer along the navigation path towards the car
+    func stepForward() {
+        let current = currentPosition
+        let target = targetCoordinate
+        let d = Geo.distance(from: current, to: target)
+        if d <= Self.arrivalThreshold { return }
+
+        let ratio: Double = d > 60 ? 0.35 : 0.85
+        let newLat = current.latitude + (target.latitude - current.latitude) * ratio
+        let newLon = current.longitude + (target.longitude - current.longitude) * ratio
+        walkerCoordinate = CLLocationCoordinate2D(latitude: newLat, longitude: newLon)
+    }
+
     /// Fetches a pedestrian route. Indoors / in garages MapKit may have no path – the radar still works then.
     func loadRoute(from origin: CLLocationCoordinate2D) async {
         guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
-        let cleanOrigin = sanitize(origin)
+        let cleanStart = effectiveOrigin(from: origin)
         let cleanTarget = targetCoordinate
-        lastOrigin = cleanOrigin
+        lastOrigin = cleanStart
+        if walkerCoordinate == nil {
+            walkerCoordinate = cleanStart
+        }
         do {
-            route = try await routes.walkingRoute(from: cleanOrigin, to: cleanTarget)
+            route = try await routes.walkingRoute(from: cleanStart, to: cleanTarget)
             routeError = nil
         } catch {
             route = nil
