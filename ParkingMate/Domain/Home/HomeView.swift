@@ -112,6 +112,7 @@ struct HomeView: View {
                     }
                     .buttonStyle(.plain)
                     .accessibilityElement(children: .combine)
+                    .accessibilityLabel("\(action.title): \(action.subtitle)")
                     .accessibilityHint("Opens \(action.title)")
                 }
             }
