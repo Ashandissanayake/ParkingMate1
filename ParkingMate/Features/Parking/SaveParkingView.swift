@@ -1,5 +1,8 @@
 import SwiftUI
 import PhotosUI
+#if canImport(ConfettiSwiftUI)
+import ConfettiSwiftUI
+#endif
 
 /// "Save My Parking" – designs save_my_parking_1/2/3 + save_my_parking_details_form + save_parking_location.
 struct SaveParkingView: View {
@@ -309,6 +312,7 @@ struct ParkingSavedView: View {
     var finish: (_ viewOnMap: Bool) -> Void
     @Environment(\.appMotionReduced) private var reduced
     @State private var appeared = false
+    @State private var confettiTrigger = 0
 
     var body: some View {
         ZStack {
@@ -318,6 +322,9 @@ struct ParkingSavedView: View {
                 Image(systemName: "checkmark.circle.fill").font(.system(size: 88)).foregroundStyle(.white)
                     .scaleEffect(appeared || reduced ? 1 : 0.4)
                     .accessibilityHidden(true)
+                    #if canImport(ConfettiSwiftUI)
+                    .confettiCannon(counter: $confettiTrigger, num: 40, openingAngle: Angle(degrees: 60), closingAngle: Angle(degrees: 120), radius: 220)
+                    #endif
                 Text("Parking Saved!").font(.largeTitle.weight(.bold)).foregroundStyle(.white)
                 Text("Your parking location has been saved successfully.").foregroundStyle(.white.opacity(0.85))
                     .multilineTextAlignment(.center)
@@ -343,6 +350,11 @@ struct ParkingSavedView: View {
             .padding(24)
             .frame(maxWidth: 520)
         }
-        .onAppear { withAnimation(.spring) { appeared = true } }
+        .onAppear {
+            withAnimation(.spring) { appeared = true }
+            #if canImport(ConfettiSwiftUI)
+            confettiTrigger += 1
+            #endif
+        }
     }
 }
