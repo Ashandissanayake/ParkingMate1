@@ -265,7 +265,11 @@ private struct SaveParkingForm: View {
 
     private func save(_ vm: SaveParkingViewModel) {
         do {
-            let session = try vm.buildSession(coordinate: container.location.coordinate ?? prefill.facility?.coordinate)
+            var coord = container.location.coordinate ?? prefill.facility?.coordinate ?? AppConfig.fallbackCenter
+            if coord.latitude < 5.9 || coord.latitude > 9.9 || coord.longitude < 79.5 || coord.longitude > 82.0 {
+                coord = AppConfig.fallbackCenter
+            }
+            let session = try vm.buildSession(coordinate: coord)
             if container.store.startSession(session) {
                 Haptics.success()
                 container.location.requestAlwaysPermission()

@@ -21,12 +21,24 @@ final class CarLocatorViewModel {
         self.routes = routes
     }
 
+    private func sanitize(_ coord: CLLocationCoordinate2D) -> CLLocationCoordinate2D {
+        // Ensure coordinate is within Sri Lanka bounds
+        if coord.latitude < 5.9 || coord.latitude > 9.9 || coord.longitude < 79.5 || coord.longitude > 82.0 {
+            return AppConfig.fallbackCenter
+        }
+        return coord
+    }
+
+    var targetCoordinate: CLLocationCoordinate2D {
+        sanitize(session.coordinate)
+    }
+
     func distance(from origin: CLLocationCoordinate2D) -> CLLocationDistance {
-        Geo.distance(from: origin, to: session.coordinate)
+        Geo.distance(from: sanitize(origin), to: targetCoordinate)
     }
 
     func bearing(from origin: CLLocationCoordinate2D) -> Double {
-        Geo.bearing(from: origin, to: session.coordinate)
+        Geo.bearing(from: sanitize(origin), to: targetCoordinate)
     }
 
     func hasArrived(from origin: CLLocationCoordinate2D) -> Bool {
@@ -35,12 +47,12 @@ final class CarLocatorViewModel {
 
     /// First step whose end point the user hasn't reached yet.
     func currentStep(from origin: CLLocationCoordinate2D) -> RouteStep? {
-        route?.steps.first { Geo.distance(from: origin, to: $0.endCoordinate) > 20 }
+        route?.steps.first { Geo.distance(from: sanitize(origin), to: $0.endCoordinate) > 20 }
     }
 
     func shouldReroute(from origin: CLLocationCoordinate2D) -> Bool {
         guard let lastOrigin else { return true }
-        return Geo.distance(from: lastOrigin, to: origin) > Self.rerouteThreshold
+        return Geo.distance(from: sanitize(lastOrigin), to: sanitize(origin)) > Self.rerouteThreshold
     }
 
     /// Fetches a pedestrian route. Indoors / in garages MapKit may have no path – the radar still works then.
@@ -48,9 +60,11 @@ final class CarLocatorViewModel {
         guard !isLoading else { return }
         isLoading = true
         defer { isLoading = false }
-        lastOrigin = origin
+        let cleanOrigin = sanitize(origin)
+        let cleanTarget = targetCoordinate
+        lastOrigin = cleanOrigin
         do {
-            route = try await routes.walkingRoute(from: origin, to: session.coordinate)
+            route = try await routes.walkingRoute(from: cleanOrigin, to: cleanTarget)
             routeError = nil
         } catch {
             route = nil

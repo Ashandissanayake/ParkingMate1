@@ -91,12 +91,12 @@ private struct FindMyCarContent: View {
     private func map(_ s: ParkingSession) -> some View {
         Map(position: $position) {
             UserAnnotation()
-            Annotation("My car", coordinate: s.coordinate) {
+            Annotation("My car", coordinate: vm.targetCoordinate) {
                 Image(systemName: "car.fill").foregroundStyle(.white).padding(8)
                     .background(Theme.danger, in: Circle())
                     .accessibilityLabel("Your parked car, \(s.locationLabel)")
             }
-            MapCircle(center: s.coordinate, radius: AppConfig.geofenceRadius)
+            MapCircle(center: vm.targetCoordinate, radius: AppConfig.geofenceRadius)
                 .foregroundStyle(Theme.primary.opacity(0.12)).stroke(Theme.primary.opacity(0.5), lineWidth: 1)
             if let route = vm.route {
                 MapPolyline(route.polyline).stroke(Theme.primary, lineWidth: 6)
@@ -105,10 +105,10 @@ private struct FindMyCarContent: View {
         .mapControls { MapUserLocationButton(); MapCompass() }
         .onChange(of: vm.route?.distance) { _, _ in
             if let rect = vm.route?.polyline.boundingMapRect {
-                position = .rect(rect.insetBy(dx: -rect.width * 0.3, dy: -rect.height * 0.3))
+                position = .rect(rect.insetBy(dx: -rect.width * 0.35, dy: -rect.height * 0.35))
             }
         }
-        .onAppear { position = .region(MKCoordinateRegion(center: s.coordinate, latitudinalMeters: 300, longitudinalMeters: 300)) }
+        .onAppear { position = .region(MKCoordinateRegion(center: vm.targetCoordinate, latitudinalMeters: 500, longitudinalMeters: 500)) }
     }
 
     private func radarCard(_ s: ParkingSession) -> some View {
@@ -227,24 +227,35 @@ private struct NavigationContent: View {
     @Environment(\.dismiss) private var dismiss
     @State private var vm: CarLocatorViewModel
     @State private var lastAnnounced: String?
+    @State private var position: MapCameraPosition = .automatic
 
     init(session: ParkingSession, routes: RouteProviding) {
         _vm = State(initialValue: CarLocatorViewModel(session: session, routes: routes))
     }
 
     var body: some View {
-        let origin = container.location.coordinate
-        let arrived = origin.map { vm.hasArrived(from: $0) } ?? false
+        let origin = container.location.coordinate ?? AppConfig.fallbackCenter
+        let arrived = vm.hasArrived(from: origin)
         ZStack(alignment: .bottom) {
-            Map(initialPosition: .userLocation(followsHeading: true, fallback: .automatic)) {
+            Map(position: $position) {
                 UserAnnotation()
-                Annotation("My car", coordinate: vm.session.coordinate) {
+                Annotation("My car", coordinate: vm.targetCoordinate) {
                     Image(systemName: "car.fill").foregroundStyle(.white).padding(8).background(Theme.danger, in: Circle())
                 }
                 if let route = vm.route { MapPolyline(route.polyline).stroke(Theme.primary, lineWidth: 7) }
             }
-            .mapControls { MapCompass() }
+            .mapControls { MapUserLocationButton(); MapCompass() }
             .ignoresSafeArea(edges: .bottom)
+            .onAppear {
+                position = .region(MKCoordinateRegion(center: vm.targetCoordinate, latitudinalMeters: 600, longitudinalMeters: 600))
+            }
+            .onChange(of: vm.route?.distance) { _, _ in
+                if let rect = vm.route?.polyline.boundingMapRect {
+                    withAnimation {
+                        position = .rect(rect.insetBy(dx: -rect.width * 0.4, dy: -rect.height * 0.4))
+                    }
+                }
+            }
 
             VStack {
                 banner(origin: origin, arrived: arrived)
