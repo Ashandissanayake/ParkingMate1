@@ -61,6 +61,7 @@ struct HomeView: View {
             }
             .padding(16)
         }
+        .scrollBounceBehavior(.always)
         .background(Theme.background.ignoresSafeArea())
         .navigationTitle("ParkingMate")
         .navigationBarTitleDisplayMode(.inline)

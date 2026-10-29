@@ -114,6 +114,7 @@ private struct SaveParkingForm: View {
             .frame(maxWidth: 640)
             .frame(maxWidth: .infinity)
         }
+        .scrollBounceBehavior(.always)
         .fullScreenCover(isPresented: $showScanner) { ParkingNumberScannerSheet { vm.applyScannedNumber($0) } }
         .fullScreenCover(isPresented: $showCamera) {
             CameraPicker(onImage: { vm.setPhoto($0); showCamera = false }, onCancel: { showCamera = false })

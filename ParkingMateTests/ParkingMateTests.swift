@@ -1,7 +1,7 @@
 import Testing
 import Foundation
 import CoreLocation
-@testable import ParkingMate
+@testable import parkingMate
 
 // ==============================================================================
 // MARK: - TEST DOUBLES & MOCKS (In-Memory Fakes for Unit Testing)
@@ -635,10 +635,10 @@ struct SriLankaFacilitiesTests {
 
         #expect(FacilityFilter.all.matches(free) == true)
         #expect(FacilityFilter.all.matches(evCovered) == true)
-        #expect(FacilityFilter.freeOnly.matches(free) == true)
-        #expect(FacilityFilter.freeOnly.matches(evCovered) == false)
-        #expect(FacilityFilter.evCharging.matches(evCovered) == true)
-        #expect(FacilityFilter.evCharging.matches(free) == false)
+        #expect(FacilityFilter.free.matches(free) == true)
+        #expect(FacilityFilter.free.matches(evCovered) == false)
+        #expect(FacilityFilter.ev.matches(evCovered) == true)
+        #expect(FacilityFilter.ev.matches(free) == false)
         #expect(FacilityFilter.covered.matches(evCovered) == true)
         #expect(FacilityFilter.covered.matches(free) == false)
     }

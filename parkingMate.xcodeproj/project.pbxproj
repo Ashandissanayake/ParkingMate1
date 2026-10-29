@@ -6,8 +6,19 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXContainerItemProxy section */
+		EFEA71973092125900E5BDF7 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = EFEA714C3092125900E5BDF7 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = EFEA71533092125900E5BDF7;
+			remoteInfo = parkingMate;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		EFEA71543092125900E5BDF7 /* parkingMate.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = parkingMate.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		EFEA71943092125900E5BDF7 /* parkingMateTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = parkingMateTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
@@ -31,6 +42,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EFEA71913092125900E5BDF7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -47,6 +65,7 @@
 			isa = PBXGroup;
 			children = (
 				EFEA71543092125900E5BDF7 /* parkingMate.app */,
+				EFEA71943092125900E5BDF7 /* parkingMateTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,6 +95,29 @@
 			productReference = EFEA71543092125900E5BDF7 /* parkingMate.app */;
 			productType = "com.apple.product-type.application";
 		};
+		EFEA71933092125900E5BDF7 /* parkingMateTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = EFEA719F3092125A00E5BDF7 /* Build configuration list for PBXNativeTarget "parkingMateTests" */;
+			buildPhases = (
+				EFEA71903092125900E5BDF7 /* Sources */,
+				EFEA71913092125900E5BDF7 /* Frameworks */,
+				EFEA71923092125900E5BDF7 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				EFEA71983092125900E5BDF7 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				EFEA71993092125900E5BDF7 /* ParkingMateTests */,
+			);
+			name = parkingMateTests;
+			packageProductDependencies = (
+			);
+			productName = parkingMateTests;
+			productReference = EFEA71943092125900E5BDF7 /* parkingMateTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -89,6 +131,10 @@
 					EFEA71533092125900E5BDF7 = {
 						CreatedOnToolsVersion = 26.2;
 					};
+					EFEA71933092125900E5BDF7 = {
+						CreatedOnToolsVersion = 26.2;
+						TestTargetID = EFEA71533092125900E5BDF7;
+					};
 				};
 			};
 			buildConfigurationList = EFEA714F3092125900E5BDF7 /* Build configuration list for PBXProject "parkingMate" */;
@@ -100,18 +146,29 @@
 			);
 			mainGroup = EFEA714B3092125900E5BDF7;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				D50235D73093885A00ADD348 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = EFEA71553092125900E5BDF7 /* Products */;
 			projectDirPath = "";
 			projectRoot = "";
 			targets = (
 				EFEA71533092125900E5BDF7 /* parkingMate */,
+				EFEA71933092125900E5BDF7 /* parkingMateTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		EFEA71523092125900E5BDF7 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		EFEA71923092125900E5BDF7 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -128,7 +185,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		EFEA71903092125900E5BDF7 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		EFEA71983092125900E5BDF7 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = EFEA71533092125900E5BDF7 /* parkingMate */;
+			targetProxy = EFEA71973092125900E5BDF7 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		EFEA715D3092125A00E5BDF7 /* Debug */ = {
@@ -259,6 +331,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8QHAA37DC6;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used to photograph your parking spot or ticket.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Used to unlock the app securely.";
@@ -299,6 +372,7 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 8QHAA37DC6;
 				ENABLE_PREVIEWS = YES;
+				ENABLE_TESTABILITY = YES;
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_NSCameraUsageDescription = "Used to photograph your parking spot or ticket.";
 				INFOPLIST_KEY_NSFaceIDUsageDescription = "Used to unlock the app securely.";
@@ -330,6 +404,36 @@
 			};
 			name = Release;
 		};
+		EFEA719D3092125A00E5BDF7 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				PRODUCT_BUNDLE_IDENTIFIER = AshanDissanayake.parkingMateTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/parkingMate.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/parkingMate";
+			};
+			name = Debug;
+		};
+		EFEA719E3092125A00E5BDF7 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.2;
+				PRODUCT_BUNDLE_IDENTIFIER = AshanDissanayake.parkingMateTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/parkingMate.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/parkingMate";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -351,7 +455,27 @@
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
 		};
+		EFEA719F3092125A00E5BDF7 /* Build configuration list for PBXNativeTarget "parkingMateTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				EFEA719D3092125A00E5BDF7 /* Debug */,
+				EFEA719E3092125A00E5BDF7 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
+
+/* Begin XCRemoteSwiftPackageReference section */
+		D50235D73093885A00ADD348 /* XCRemoteSwiftPackageReference "ConfettiSwiftUI" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/simibac/ConfettiSwiftUI.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 3.0.0;
+			};
+		};
+/* End XCRemoteSwiftPackageReference section */
 	};
 	rootObject = EFEA714C3092125900E5BDF7 /* Project object */;
 }

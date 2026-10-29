@@ -338,6 +338,7 @@ struct SmartDetectionView: View {
             .frame(maxWidth: 560)
             .frame(maxWidth: .infinity)
         }
+        .scrollBounceBehavior(.always)
         .background(Theme.background.ignoresSafeArea())
         .navigationTitle("Auto Detect Location")
         .navigationBarTitleDisplayMode(.inline)
