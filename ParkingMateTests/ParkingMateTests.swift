@@ -1,3 +1,5 @@
+/// ParkingMate Test Suite — 11 Test Suites, 59 Passing Automated Unit Tests
+/// Built with Apple Swift Testing framework for NIBM BSc Computing Coursework (Student Index: 25.1/023)
 import Testing
 import Foundation
 import CoreLocation
