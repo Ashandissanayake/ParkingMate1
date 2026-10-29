@@ -6,36 +6,35 @@ struct NearbyParkingView: View {
     let initialCenter: CLLocationCoordinate2D?
     @Environment(AppContainer.self) private var container
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @State private var vm: NearbyParkingViewModel?
-    @State private var position: MapCameraPosition = .region(MKCoordinateRegion(center: AppConfig.fallbackCenter, latitudinalMeters: 5000, longitudinalMeters: 5000))
+    @State private var vm: NearbyParkingViewModel
+    @State private var position: MapCameraPosition
     @State private var selectedID: String?
     @State private var showList = false
     @State private var visibleCenter: CLLocationCoordinate2D?
     @State private var navigationRoute: WalkingRoute?
 
-    var body: some View {
-        Group {
-            if let vm { content(vm) } else { ProgressView() }
+    init(initialCenter: CLLocationCoordinate2D? = nil) {
+        self.initialCenter = initialCenter
+        let islandCenter = CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718)
+        let center = initialCenter ?? islandCenter
+        _vm = State(initialValue: NearbyParkingViewModel(center: center))
+        if let initial = initialCenter {
+            _position = State(initialValue: .region(MKCoordinateRegion(center: initial, latitudinalMeters: 8000, longitudinalMeters: 8000)))
+        } else {
+            _position = State(initialValue: .region(MKCoordinateRegion(center: islandCenter, latitudinalMeters: 380000, longitudinalMeters: 380000)))
         }
-        .navigationTitle("Sri Lanka Parking Map")
-        .navigationBarTitleDisplayMode(.inline)
-        .task {
-            if vm == nil {
+    }
+
+    var body: some View {
+        content(vm)
+            .navigationTitle("Sri Lanka Parking Map")
+            .navigationBarTitleDisplayMode(.inline)
+            .task {
                 container.location.start()
                 if let initial = initialCenter {
-                    let model = NearbyParkingViewModel(provider: container.facilities, center: initial)
-                    vm = model
-                    position = .region(MKCoordinateRegion(center: initial, latitudinalMeters: 8000, longitudinalMeters: 8000))
-                    await model.load(around: initial, radius: 10000)
-                } else {
-                    let islandCenter = CLLocationCoordinate2D(latitude: 7.8731, longitude: 80.7718)
-                    let model = NearbyParkingViewModel(provider: container.facilities, center: islandCenter)
-                    vm = model
-                    position = .region(MKCoordinateRegion(center: islandCenter, latitudinalMeters: 380000, longitudinalMeters: 380000))
-                    await model.load(around: islandCenter, radius: 400000)
+                    await vm.load(around: initial, radius: 10000)
                 }
             }
-        }
     }
 
     @ViewBuilder

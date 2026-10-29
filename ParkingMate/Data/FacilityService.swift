@@ -135,10 +135,12 @@ struct FacilityService: FacilityProviding {
         }
 
         let key = Self.cacheKey(for: coordinate)
+        if let cached = cache.load(key: key), !cached.isEmpty { return FacilityResult(facilities: cached, isFromCache: true) }
+
         let query = Self.query(latitude: coordinate.latitude, longitude: coordinate.longitude, radius: radius)
         var request = URLRequest(url: endpoint)
         request.httpMethod = "POST"
-        request.timeoutInterval = 30
+        request.timeoutInterval = 3
         request.setValue("application/x-www-form-urlencoded", forHTTPHeaderField: "Content-Type")
         request.setValue(AppConfig.userAgent, forHTTPHeaderField: "User-Agent")
         let encoded = query.addingPercentEncoding(withAllowedCharacters: .alphanumerics) ?? query

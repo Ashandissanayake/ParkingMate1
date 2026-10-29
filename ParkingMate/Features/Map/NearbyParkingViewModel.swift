@@ -17,16 +17,17 @@ final class NearbyParkingViewModel {
 
     @ObservationIgnored private let provider: FacilityProviding
 
-    init(provider: FacilityProviding, center: CLLocationCoordinate2D) {
+    init(provider: FacilityProviding = FacilityService(), center: CLLocationCoordinate2D = AppConfig.fallbackCenter) {
         self.provider = provider
         self.center = center
+        self.facilities = FacilityService.allSriLankaFacilities
     }
 
     var filtered: [ParkingFacility] { facilities.filter(filter.matches) }
 
     func load(around coordinate: CLLocationCoordinate2D, radius: Int = 1200) async {
         center = coordinate
-        isLoading = true
+        if facilities.isEmpty { isLoading = true }
         errorMessage = nil
         defer { isLoading = false }
         do {
@@ -34,8 +35,10 @@ final class NearbyParkingViewModel {
             facilities = result.facilities
             isFromCache = result.isFromCache
         } catch {
-            facilities = []
-            errorMessage = error.localizedDescription
+            if facilities.isEmpty {
+                facilities = FacilityService.allSriLankaFacilities
+            }
+            errorMessage = nil
         }
     }
 

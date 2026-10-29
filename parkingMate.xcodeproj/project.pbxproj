@@ -16,6 +16,11 @@
 			path = parkingMate;
 			sourceTree = "<group>";
 		};
+		EFEA71993092125900E5BDF7 /* ParkingMateTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = ParkingMateTests;
+			sourceTree = "<group>";
+		};
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -33,6 +38,7 @@
 			isa = PBXGroup;
 			children = (
 				EFEA71563092125900E5BDF7 /* parkingMate */,
+				EFEA71993092125900E5BDF7 /* ParkingMateTests */,
 				EFEA71553092125900E5BDF7 /* Products */,
 			);
 			sourceTree = "<group>";
