@@ -478,11 +478,13 @@ final class VoiceAnnouncementService: NSObject, AVSpeechSynthesizerDelegate {
 
 // MARK: - Bluetooth & CarPlay Auto-Save Service (Feature B)
 
+/// Background service monitoring Bluetooth (A2DP/HFP) and CarPlay disconnects to auto-detect vehicle parking events.
 @MainActor
 @Observable
 final class BluetoothParkingService: NSObject {
     static let shared = BluetoothParkingService()
     var isCarConnected: Bool = false
+    var connectedDeviceName: String?
     var lastEventDescription: String?
     var isMonitoring: Bool = false
     @ObservationIgnored var onCarDisconnected: (() -> Void)?
