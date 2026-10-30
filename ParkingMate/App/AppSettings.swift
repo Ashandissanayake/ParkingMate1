@@ -87,3 +87,4 @@ extension StoreSettings {
     var autoCheckoutEnabled: Bool { true }
 }
 extension AppSettings: StoreSettings {}
+
